@@ -1,0 +1,10 @@
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\BayesPointMachine.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\BayesPointMachine.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\Infer.Compiler.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\Infer.Runtime.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\Infer.Compiler.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\Infer.Compiler.xml
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\Infer.Runtime.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Release\Infer.Runtime.xml
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Release\BayesPointMachine.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Release\BayesPointMachine.pdb

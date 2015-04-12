@@ -1,0 +1,42 @@
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\BayesPointMachine.dll
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\BayesPointMachine.pdb
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.dll
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.dll
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.pdb
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.xml
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.pdb
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.xml
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.csprojResolveAssemblyReference.cache
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.dll
+C:\Users\Guy\Downloads\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\BayesPointMachine.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\BayesPointMachine.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.xml
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.pdb
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.xml
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.csprojResolveAssemblyReference.cache
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.dll
+U:\Honours\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.pdb
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\BayesPointMachine.dll
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\BayesPointMachine.pdb
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.dll
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.dll
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.pdb
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Compiler.xml
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.pdb
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\bin\Debug\Infer.Runtime.xml
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.csprojResolveAssemblyReference.cache
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.dll
+D:\Dropbox\Academic\Dundee\Stuff\Infer.NET 2.5\Samples\C#\BayesPointMachine\BayesPointMachine\obj\Debug\BayesPointMachine.pdb
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\bin\Debug\BayesPointMachine.dll
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\bin\Debug\BayesPointMachine.pdb
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\bin\Debug\Infer.Compiler.pdb
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\bin\Debug\Infer.Compiler.xml
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\bin\Debug\Infer.Runtime.pdb
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\bin\Debug\Infer.Runtime.xml
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\obj\Debug\BayesPointMachine.csprojResolveAssemblyReference.cache
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\obj\Debug\BayesPointMachine.dll
+C:\Users\Guy\Documents\Visual Studio 2013\Projects\BPM-WindowsFormApp\BayesPointMachine\obj\Debug\BayesPointMachine.pdb
