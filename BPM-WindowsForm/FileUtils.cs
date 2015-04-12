@@ -11,11 +11,12 @@ namespace BayesPointMachineForm
 {
     class FileUtils
     {
-        public static BPMDataModel Read(string filename, bool labelAtStart, int noOfInputs,
+        public static BPMDataModel ReadFile(string filename, bool labelAtStart, int noOfInputs,
             int noOfFeatures, bool addBias)
         {
             BPMDataModel newModel = new BPMDataModel(noOfInputs);
             List<double[]> featureData = new List<double[]>();
+            //Holds the upper and lower limits for each feature being analysed
             List<double[]> limits = new List<double[]>(noOfFeatures);
             for (int i = 0; i < noOfFeatures; i++)
             {
@@ -27,6 +28,7 @@ namespace BayesPointMachineForm
             {
                 featureData.Add(new double[noOfInputs]);
             }
+            //The variables to hold the data being read in
             int[] classData = new int[noOfInputs];
             List<Vector> x = new List<Vector>();
             List<int> y = new List<int>();
@@ -35,13 +37,9 @@ namespace BayesPointMachineForm
             double[] values;
             int index;
             int labelIndex;
-
-            // Find start.
             int currentLocation = 0;
             using (StreamReader reader = new StreamReader(filename))
             {
-
-                // Now read data.
                 while (!reader.EndOfStream)
                 {
                     line = reader.ReadLine();
@@ -78,7 +76,7 @@ namespace BayesPointMachineForm
                     classData[currentLocation] = Int32.Parse(pieces[labelIndex - 1]);
                     x.Add(Vector.FromArray(values));
                     y.Add(Int32.Parse(pieces[labelIndex]));
-                    currentLocation = currentLocation + 1;
+                    currentLocation++;
                 }
             }
             featureVectors = x.ToArray();
