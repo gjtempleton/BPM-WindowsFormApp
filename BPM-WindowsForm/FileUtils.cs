@@ -20,6 +20,7 @@ namespace BayesPointMachineForm
                 temp.ReadLine();
                 noOfInputs++;
             }
+            temp.Dispose();
             BPMDataModel newModel = new BPMDataModel(noOfInputs);
             List<double[]> featureData = new List<double[]>();
             //Holds the upper and lower limits for each feature being analysed
