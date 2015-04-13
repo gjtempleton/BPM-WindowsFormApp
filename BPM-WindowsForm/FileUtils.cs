@@ -11,9 +11,15 @@ namespace BayesPointMachineForm
 {
     class FileUtils
     {
-        public static BPMDataModel ReadFile(string filename, bool labelAtStart, int noOfInputs,
-            int noOfFeatures, bool addBias)
+        public static BPMDataModel ReadFile(string filename, bool labelAtStart, int noOfFeatures, bool addBias)
         {
+            int noOfInputs = 0;
+            StreamReader temp = new StreamReader(filename);
+            while (!temp.EndOfStream)
+            {
+                temp.ReadLine();
+                noOfInputs++;
+            }
             BPMDataModel newModel = new BPMDataModel(noOfInputs);
             List<double[]> featureData = new List<double[]>();
             //Holds the upper and lower limits for each feature being analysed
@@ -78,6 +84,8 @@ namespace BayesPointMachineForm
                     y.Add(Int32.Parse(pieces[labelIndex]));
                     currentLocation++;
                 }
+                //Clean up resources
+                reader.Dispose();
             }
             featureVectors = x.ToArray();
 

@@ -164,19 +164,20 @@ namespace BayesPointMachineForm
         {
             StreamWriter writer = new StreamWriter(resultsFilePath);
             //int noOfFeatures = 4;
-            int noOfTestValues = 274;
+            //int noOfTestValues = 274;
             //int noOfTestValues = 15060;
-            int noOfTrainingValues = 1098;
+            //int noOfTrainingValues = 1098;
             //int noOfTrainingValues = 30162;
             //string trainingFilePath = @"..\..\data\banknotesdata.txt";
             //string trainingFilePath = @"..\..\data\adultTraining.txt";
-            BPMDataModel trainingModel = FileUtils.ReadFile(trainingFilePath, labelAtStartOfLine, noOfTrainingValues,
-                noOfFeatures, addBias);
+
+
+            BPMDataModel trainingModel = FileUtils.ReadFile(trainingFilePath, labelAtStartOfLine, noOfFeatures, addBias);
             BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, noisePrecision);
 
             //string testFile = @"..\..\data\banknotestraining.txt";
             //string testFile = @"..\..\data\adultTest.txt";s
-            BPMDataModel testModel = FileUtils.ReadFile(testFilePath, labelAtStartOfLine, noOfTestValues, noOfFeatures, addBias);
+            BPMDataModel testModel = FileUtils.ReadFile(testFilePath, labelAtStartOfLine, noOfFeatures, addBias);
             Vector[] testVectors = testModel.GetInputs();
             int runsLeft = totalRuns;
             double accuracy = 0;
