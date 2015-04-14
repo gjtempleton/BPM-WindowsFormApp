@@ -17,6 +17,7 @@ namespace BayesPointMachineForm
 {
     public partial class Form1 : Form
     {
+        #region variables
         bool performingCalcs = false;
         private string resultsFilePath = @"";
         private string trainingFilePath = @"";
@@ -31,6 +32,8 @@ namespace BayesPointMachineForm
         private bool labelAtStartOfLine = false;
         private int totalRuns, runsLeft;
         private bool addBias = false;
+        private bool trainingSelected, testingSelected, resultsSelected = false;
+        #endregion
 
         public Form1()
         {
@@ -93,6 +96,8 @@ namespace BayesPointMachineForm
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 trainingFilePath = openFileDialog1.FileName;
+                trainingSelected = true;
+                if (trainingSelected && testingSelected && resultsSelected) beginButton.Enabled = true;
             }
         }
 
@@ -101,6 +106,8 @@ namespace BayesPointMachineForm
             if(openFileDialog2.ShowDialog() == DialogResult.OK)
             {
                 testFilePath = openFileDialog2.FileName;
+                testingSelected = true;
+                if (trainingSelected && testingSelected && resultsSelected) beginButton.Enabled = true;
             }
         }
 
@@ -109,6 +116,8 @@ namespace BayesPointMachineForm
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 resultsFilePath = saveFileDialog1.FileName;
+                resultsSelected = true;
+                if (trainingSelected && testingSelected && resultsSelected) beginButton.Enabled = true;
             }
         }
 

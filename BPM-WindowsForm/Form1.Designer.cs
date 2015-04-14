@@ -175,6 +175,7 @@
             // 
             // beginButton
             // 
+            this.beginButton.Enabled = false;
             this.beginButton.Location = new System.Drawing.Point(13, 343);
             this.beginButton.Name = "beginButton";
             this.beginButton.Size = new System.Drawing.Size(259, 43);
