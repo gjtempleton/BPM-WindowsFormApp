@@ -155,6 +155,10 @@ namespace BayesPointMachineForm
 
         private void begin_Click(object sender, System.EventArgs e)
         {
+            beginButton.Enabled = false;
+            trainingFileSelect.Enabled = false;
+            testFileSelect.Enabled = false;
+            resultsFileSelect.Enabled = false;
             Thread calcThread = new Thread(RunTests);
             calcThread.Name = "CalcThread";
             calcThread.Priority = ThreadPriority.BelowNormal;
@@ -167,6 +171,9 @@ namespace BayesPointMachineForm
                 Thread.Sleep(100);
                 progressBar1.Value = (totalRuns - runsLeft);
             }
+            trainingFileSelect.Enabled = true;
+            testFileSelect.Enabled = true;
+            resultsFileSelect.Enabled = true;
         }
 
         private void RunTests()
