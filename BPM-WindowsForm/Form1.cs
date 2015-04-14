@@ -166,10 +166,30 @@ namespace BayesPointMachineForm
             progressBar1.Maximum = totalRuns;
             performingCalcs = true;
             calcThread.Start();
+            int prevRem = totalRuns;
+            int performedInInterval=0;
+            DateTime last = DateTime.Now;
+            DateTime now;
+            TimeSpan diff;
+            int noOfSleeps = 0;
             while (performingCalcs)
             {
                 Thread.Sleep(100);
                 progressBar1.Value = (totalRuns - runsLeft);
+                noOfSleeps++;
+                if (noOfSleeps == 200)
+                {
+                    performedInInterval = prevRem - runsLeft;
+                    //In case of dividing by zero
+                    if (performedInInterval == 0) performedInInterval = 1;
+                    prevRem = runsLeft;
+                    now = DateTime.Now;
+                    diff = now - last;
+                    TimeSpan remainder = new TimeSpan((diff.Ticks / performedInInterval) * runsLeft);
+                    String timeEstimate = remainder.ToString();
+                    textBox1.Text = (runsLeft + " runs left of " + totalRuns + ". Should take roughly " + timeEstimate);
+                    noOfSleeps = 0;
+                }
             }
             trainingFileSelect.Enabled = true;
             testFileSelect.Enabled = true;
@@ -195,7 +215,7 @@ namespace BayesPointMachineForm
             //string testFile = @"..\..\data\adultTest.txt";s
             BPMDataModel testModel = FileUtils.ReadFile(testFilePath, labelAtStartOfLine, noOfFeatures, addBias);
             Vector[] testVectors = testModel.GetInputs();
-            int runsLeft = totalRuns;
+            runsLeft = totalRuns;
             double accuracy = 0;
             for (double i = startSensitivity; i <= maxSensitivity; i = (i + sensitivityIncrement))
             {
@@ -204,7 +224,7 @@ namespace BayesPointMachineForm
                 {
                     noisyModel = FileUtils.CreateNoisyModel(trainingModel, i);
                     accuracy = RunBPMGeneral(noisyModel, numOfClasses, noisePrecision, addBias, testVectors, noOfFeatures, testModel.getClasses());
-                    totalRuns--;
+                    runsLeft--;
                     writer.WriteLine(i + "," + accuracy);
                     //textBox1.Text = ("Done " + j + " of acc: " + i);
                 }
