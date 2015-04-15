@@ -81,7 +81,7 @@ namespace BayesPointMachineForm
             }
             accuracy = ((double)correctCount / predictions.Length) * 100;
             //Console.WriteLine();
-            double logEvidence = bpm.GetModelEvidence(featureVectors, labels);
+            double logEvidence = bpm.GetLogEvidence();
             //Console.WriteLine("No of correct predictions: " + correctCount);
             //Console.WriteLine("Evidence for model:");
             //Console.WriteLine(logEvidence);

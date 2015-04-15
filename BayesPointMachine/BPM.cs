@@ -24,6 +24,10 @@ namespace BayesPointMachine
 		// Training and prediction models.
 		private Model trainModel;
 		private Model testModel;
+        //New variables - Added by Guy Templeton
+	    private double noisePrecision;
+	    private int numOfClasses;
+	    private int numOfFeatures;
 
 
 		/// <summary>
@@ -43,6 +47,9 @@ namespace BayesPointMachine
 			// Observe the noise precision.
 			this.trainModel.noisePrecision.ObservedValue = noisePrecision;
 			this.testModel.noisePrecision.ObservedValue = noisePrecision;
+            //New code - Added by Guy Templeton
+		    this.noisePrecision = noisePrecision;
+		    this.numOfClasses = numClasses;
 		}
 
 		/// <summary>
@@ -53,34 +60,30 @@ namespace BayesPointMachine
 		/// <returns>A posterior distribution over weights</returns>
 		public VectorGaussian[] Train(Vector[] featureVectors, int[] labels)
 		{
-			// Initialize weight priors if necessary.
-			if (!this.trainModel.wPrior.IsObserved)
-			{
-				int numFeatures = featureVectors[0].Count;
-				int numClasses = this.trainModel.numClasses.ObservedValue;
-				this.trainModel.wPrior.ObservedValue = InitializePrior(numClasses, numFeatures);
-			}
+		    // Initialize weight priors if necessary.
+		    if (!this.trainModel.wPrior.IsObserved)
+		    {
+		        int numFeatures = featureVectors[0].Count;
+		        int numClasses = this.trainModel.numClasses.ObservedValue;
+		        this.trainModel.wPrior.ObservedValue = InitializePrior(numClasses, numFeatures);
+                //New code - Added by Guy Templeton
+                this.numOfFeatures = numFeatures;
+		    }
+            // Observe features and labels.
+		    this.trainModel.numItems.ObservedValue = featureVectors.Length;
+		    this.trainModel.x.ObservedValue = featureVectors;
+		    this.trainModel.y.ObservedValue = labels;
+            
 
-			// Observe features and labels.
-			this.trainModel.numItems.ObservedValue = featureVectors.Length;
-			this.trainModel.x.ObservedValue = featureVectors;
-			this.trainModel.y.ObservedValue = labels;
 
-			// Infer the weights.
+		    // Infer the weights.
 			VectorGaussian[] posteriorWeights = this.trainModel.engine.Infer<VectorGaussian[]>(this.trainModel.w);
 
             // Store posterior weights in prior.
             this.trainModel.wPrior.ObservedValue = posteriorWeights;
+
 			return posteriorWeights;
 		}
-
-	    public double GetModelEvidence(Vector[] featureVectors, int[] labels)
-	    {
-            Variable<bool> Evidence = Variable.Bernoulli(0.5);
-
-	        double logEvidence = this.trainModel.engine.Infer<Bernoulli>(Evidence).LogOdds;
-            return logEvidence;
-	    }
 
 		/// <summary>
 		/// Predicts the labels for some given dense feature vectors.
@@ -112,6 +115,23 @@ namespace BayesPointMachine
 					VectorGaussian.PointMass(Vector.Zero(numFeatures)) :
 					VectorGaussian.FromMeanAndPrecision(Vector.Zero(numFeatures), PositiveDefiniteMatrix.Identity(numFeatures)));
 		}
+
+        //Addition by Guy Templeton, get log evidence from learned mixing coeff.
+	    public double GetLogEvidence()
+	    {
+            Variable<bool> evidence = Variable.Bernoulli(0.5).Named("evidence");
+            Range classes = new Range(numOfClasses);
+            IfBlock block = Variable.If(evidence);
+	        VariableArray<VectorGaussian> wlearned = trainModel.wPrior;
+            VariableArray<VectorGaussian> x = Variable.Array<VectorGaussian>(classes).Named("wPrior"); 
+            x.ObservedValue= Util.ArrayInit(numOfClasses, c => (c == 0) ?
+                VectorGaussian.PointMass(Vector.Zero(numOfFeatures)) :
+                VectorGaussian.FromMeanAndPrecision(Vector.Zero(numOfFeatures), PositiveDefiniteMatrix.Identity(numOfFeatures)));
+            block.CloseBlock();
+            InferenceEngine engine = new InferenceEngine();
+	        return engine.Infer<Bernoulli>(evidence).LogOdds;
+
+	    }
 
 		#region Dense BPM model
 
