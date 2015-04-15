@@ -21,13 +21,15 @@ namespace BayesPointMachineForm
                 noOfInputs++;
             }
             temp.Dispose();
-            BPMDataModel newModel = new BPMDataModel(noOfInputs);
+            BPMDataModel newModel = new BPMDataModel(noOfInputs, noOfFeatures);
             List<double[]> featureData = new List<double[]>();
             //Holds the upper and lower limits for each feature being analysed
             List<double[]> limits = new List<double[]>(noOfFeatures);
             for (int i = 0; i < noOfFeatures; i++)
             {
                 double[] lim = new double[2];
+                lim[0] = Double.NaN;
+                lim[1] = Double.NaN;
                 limits.Add(lim);
             }
             //Initialise feature data list
@@ -71,11 +73,11 @@ namespace BayesPointMachineForm
                         index = labelAtStart ? i + 1 : i;
                         values[i] = Double.Parse(pieces[index]);
                         featureData[i][currentLocation] = Double.Parse(pieces[index]);
-                        if ((limits[i][0].Equals(null)) || (values[i] < limits[i][0]))
+                        if ((limits[i][0].Equals(Double.NaN)) || (values[i] < limits[i][0]))
                         {
                             limits[i][0] = values[i];
                         }
-                        if ((limits[i][1].Equals(null)) || (values[i] > limits[i][1]))
+                        if ((limits[i][1].Equals(Double.NaN)) || (values[i] > limits[i][1]))
                         {
                             limits[i][1] = values[i];
                         }
@@ -96,22 +98,11 @@ namespace BayesPointMachineForm
             return newModel;
         }
 
-        //public List<double[]> getFeatureLimits(BPMModel model)
-        //{
-        //    List<double[]> limits = new List<double[]>();
-        //    for (int i = 0; i < model.GetArrayFeatures().Count; i++)
-        //    {
-        //        double max, min;
-        //        max = Math.Max(model.GetArrayFeatures()[i]);
-        //        double[] lims = new double[2];
-        //    }
-        //}
-
 
         public static BPMDataModel CreateNoisyModel(BPMDataModel model, double epsilon)
         {
             Random generator = new Random();
-            BPMDataModel noisyModel = new BPMDataModel(model.GetInputs().Length);
+            BPMDataModel noisyModel = new BPMDataModel(model.GetInputs().Length, model.GetNoOfFeatures());
             Vector[] currFeatures = model.GetInputs();
             List<double> ranges = model.GetRanges();
             double[] values = new double[model.GetInputs()[0].Count];
@@ -128,6 +119,8 @@ namespace BayesPointMachineForm
             }
             noisyModel.SetAllVectorFeatures(x.ToArray());
             noisyModel.SetClasses(model.getClasses());
+            noisyModel.SetFeatureLimits();
+            noisyModel.ScaleFeatures();
             return noisyModel;
         }
 
