@@ -223,6 +223,10 @@ namespace BayesPointMachineForm
                 for (int j = 0; j < noOfRuns; j++)
                 {
                     noisyModel = FileUtils.CreateNoisyModel(trainingModel, i);
+                    //Set the test model data to have the same range plus max and min
+                    //values as the noisy model, to normalise both data models to the same range
+                    testModel.SetInputLimits(noisyModel.GetInputLimits());
+                    testModel.ScaleFeatures();
                     accuracy = RunBPMGeneral(noisyModel, numOfClasses, noisePrecision, addBias, testVectors, noOfFeatures, testModel.getClasses());
                     runsLeft--;
                     writer.WriteLine(i + "," + accuracy);

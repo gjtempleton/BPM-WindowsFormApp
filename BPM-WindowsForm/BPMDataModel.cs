@@ -78,8 +78,9 @@ namespace BayesPointMachineForm
             return ranges;
         }
 
-        public void SetFeatureLimits()
+        public void CalculateFeatureLimits()
         {
+            inputLimits = new List<double[]>();
             for (int i = 0; i < noOfFeatures; i++)
             {
                 double[] lim = new double[2];
@@ -119,6 +120,7 @@ namespace BayesPointMachineForm
                     inputsDoubles[j][i] = (inputsDoubles[j][i] - inputLimits[i][0])/ranges[i];
                 }
             }
+            int check = 0;
         }
 
 
