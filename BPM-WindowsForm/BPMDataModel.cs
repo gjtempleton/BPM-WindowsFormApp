@@ -1,27 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MicrosoftResearch.Infer.Maths;
 
 namespace BayesPointMachineForm
 {
     class BPMDataModel
     {
-        private Vector[] inputsDoubles;
-        private int[] classes;
-        private List<double[]> arrayInputs;
-        private List<double[]> inputLimits;
-        private List<double> ranges;
-        private int noOfFeatures;
+        private Vector[] _inputsDoubles;
+        private int[] _classes;
+        private List<double[]> _arrayInputs;
+        private List<double[]> _inputLimits;
+        private List<double> _ranges;
+        private int _noOfFeatures;
 
         public BPMDataModel(int noOfInputs, int noOfFeatures)
         {
-            classes = new int[noOfInputs];
-            inputsDoubles = new Vector[noOfInputs];
-            ranges = new List<double>(noOfInputs);
-            this.noOfFeatures = noOfFeatures;
+            _classes = new int[noOfInputs];
+            _inputsDoubles = new Vector[noOfInputs];
+            _ranges = new List<double>(noOfInputs);
+            _noOfFeatures = noOfFeatures;
         }
         //public void SetAFeature(double[] featureValues)
         //{
@@ -30,82 +27,82 @@ namespace BayesPointMachineForm
 
         public void SetAllVectorFeatures(Vector[] allFeatures)
         {
-            this.inputsDoubles = allFeatures;
+            _inputsDoubles = allFeatures;
         }
 
         public void SetAllArrayFeatures(List<double[]> allFeatures)
         {
-            this.arrayInputs = allFeatures;
+            _arrayInputs = allFeatures;
         }
 
         public List<double[]> GetArrayFeatures()
         {
-            return arrayInputs;
+            return _arrayInputs;
         }
 
         public Vector[] GetInputs()
         {
-            return inputsDoubles;
+            return _inputsDoubles;
         }
 
         public void SetClasses(int[] classes)
         {
-            this.classes = classes;
+            _classes = classes;
         }
 
-        public int[] getClasses()
+        public int[] GetClasses()
         {
-            return classes;
+            return _classes;
         }
 
         public void SetInputLimits(List<double[]> limits)
         {
-            this.inputLimits = limits;
+            _inputLimits = limits;
             for (int i = 0; i < limits.Count; i++)
             {
-                double range = inputLimits[i][1] - inputLimits[i][0];
-                ranges.Add(range);
+                double range = _inputLimits[i][1] - _inputLimits[i][0];
+                _ranges.Add(range);
             }
         }
 
         public List<double[]> GetInputLimits()
         {
-            return inputLimits;
+            return _inputLimits;
         }
 
         public List<double> GetRanges()
         {
-            return ranges;
+            return _ranges;
         }
 
         public void CalculateFeatureLimits()
         {
-            inputLimits = new List<double[]>();
-            for (int i = 0; i < noOfFeatures; i++)
+            _inputLimits = new List<double[]>();
+            for (int i = 0; i < _noOfFeatures; i++)
             {
                 double[] lim = new double[2];
                 lim[0] = Double.NaN;
                 lim[1] = Double.NaN;
-                inputLimits.Add(lim);
+                _inputLimits.Add(lim);
             }
-            foreach(Vector vector in inputsDoubles)
+            foreach(Vector vector in _inputsDoubles)
             {
-                for (int j = 0; j < noOfFeatures; j++)
+                for (int j = 0; j < _noOfFeatures; j++)
                 {
-                    if ((inputLimits[j][0].Equals(Double.NaN)) || (vector[j] < inputLimits[j][0]))
+                    if ((_inputLimits[j][0].Equals(Double.NaN)) || (vector[j] < _inputLimits[j][0]))
                     {
-                        inputLimits[j][0] = vector[j];
+                        _inputLimits[j][0] = vector[j];
                     }
-                    if ((inputLimits[j][1].Equals(Double.NaN)) || (vector[j] > inputLimits[j][1]))
+                    if ((_inputLimits[j][1].Equals(Double.NaN)) || (vector[j] > _inputLimits[j][1]))
                     {
-                        inputLimits[j][1] = vector[j];
+                        _inputLimits[j][1] = vector[j];
                     }
                 }
             }
-            for (int i = 0; i < noOfFeatures; i++)
+            for (int i = 0; i < _noOfFeatures; i++)
             {
-                double range = inputLimits[i][1] - inputLimits[i][0];
-                ranges.Add(range);
+                double range = _inputLimits[i][1] - _inputLimits[i][0];
+                _ranges.Add(range);
             }
         }
 
@@ -113,21 +110,20 @@ namespace BayesPointMachineForm
         //Scales each value in the features to between 0 and 1
         public void ScaleFeatures()
         {
-            for(int j=0; j<inputsDoubles.Length; j++)
+            for(int j=0; j<_inputsDoubles.Length; j++)
             {
-                for (int i = 0; i < noOfFeatures; i++)
+                for (int i = 0; i < _noOfFeatures; i++)
                 {
-                    inputsDoubles[j][i] = (inputsDoubles[j][i] - inputLimits[i][0])/ranges[i];
+                    _inputsDoubles[j][i] = (_inputsDoubles[j][i] - _inputLimits[i][0])/_ranges[i];
                 }
             }
-            int check = 0;
         }
 
 
 
         internal int GetNoOfFeatures()
         {
-            return noOfFeatures;
+            return _noOfFeatures;
         }
     }
 }

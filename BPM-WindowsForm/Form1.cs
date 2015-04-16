@@ -2,15 +2,9 @@
 using MicrosoftResearch.Infer.Distributions;
 using MicrosoftResearch.Infer.Maths;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BayesPointMachineForm
@@ -18,21 +12,21 @@ namespace BayesPointMachineForm
     public partial class Form1 : Form
     {
         #region variables
-        bool performingCalcs = false;
-        private string resultsFilePath = @"";
-        private string trainingFilePath = @"";
-        private string testFilePath = @"";
-        private int noOfFeatures = 0;
-        private int noOfRuns = 0;
-        private double startSensitivity = 0.1;
-        private double maxSensitivity = 10.0;
-        private double sensitivityIncrement = 0.1;
-        private double noisePrecision = 1.0;
-        private int numOfClasses = 2;
-        private bool labelAtStartOfLine = false;
-        private int totalRuns, runsLeft;
-        private bool addBias = false;
-        private bool trainingSelected, testingSelected, resultsSelected = false;
+        bool _performingCalcs;
+        private string _resultsFilePath = @"";
+        private string _trainingFilePath = @"";
+        private string _testFilePath = @"";
+        private int _noOfFeatures;
+        private int _noOfRuns;
+        private double _startSensitivity = 0.1;
+        private double _maxSensitivity = 10.0;
+        private double _sensitivityIncrement = 0.1;
+        private double _noisePrecision = 1.0;
+        private int _numOfClasses = 2;
+        private bool _labelAtStartOfLine;
+        private int _totalRuns, _runsLeft;
+        private bool _addBias = false;
+        private bool _trainingSelected, _testingSelected, _resultsSelected;
         #endregion
 
         public Form1()
@@ -59,11 +53,11 @@ namespace BayesPointMachineForm
         private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int noOfFeatures, int[] testResults)
         {
             double accuracy;
-            int[] labels = model.getClasses();
+            int[] labels = model.GetClasses();
             int correctCount = 0;
             Vector[] featureVectors = new Vector[noOfFeatures];
             BPM bpm = new BPM(numClasses, noisePrecision);
-            VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.getClasses());
+            VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.GetClasses());
 			//Console.WriteLine("Weights=" + StringUtil.ArrayToString(posteriorWeights));
 
             //Console.WriteLine("\nPredictions:");
@@ -95,9 +89,9 @@ namespace BayesPointMachineForm
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                trainingFilePath = openFileDialog1.FileName;
-                trainingSelected = true;
-                if (trainingSelected && testingSelected && resultsSelected) beginButton.Enabled = true;
+                _trainingFilePath = openFileDialog1.FileName;
+                _trainingSelected = true;
+                if (_trainingSelected && _testingSelected && _resultsSelected) beginButton.Enabled = true;
             }
         }
 
@@ -105,9 +99,9 @@ namespace BayesPointMachineForm
         {
             if(openFileDialog2.ShowDialog() == DialogResult.OK)
             {
-                testFilePath = openFileDialog2.FileName;
-                testingSelected = true;
-                if (trainingSelected && testingSelected && resultsSelected) beginButton.Enabled = true;
+                _testFilePath = openFileDialog2.FileName;
+                _testingSelected = true;
+                if (_trainingSelected && _testingSelected && _resultsSelected) beginButton.Enabled = true;
             }
         }
 
@@ -115,40 +109,40 @@ namespace BayesPointMachineForm
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                resultsFilePath = saveFileDialog1.FileName;
-                resultsSelected = true;
-                if (trainingSelected && testingSelected && resultsSelected) beginButton.Enabled = true;
+                _resultsFilePath = saveFileDialog1.FileName;
+                _resultsSelected = true;
+                if (_trainingSelected && _testingSelected && _resultsSelected) beginButton.Enabled = true;
             }
         }
 
         private void checkbox1_Click(object sender, System.EventArgs e)
         {
-            labelAtStartOfLine = checkBox1.Checked;
+            _labelAtStartOfLine = checkBox1.Checked;
         }
 
         private void noOfFeatures_Changed(object sender, System.EventArgs e)
         {
-            noOfFeatures = (int)numericUpDown1.Value;
+            _noOfFeatures = (int)numericUpDown1.Value;
         }
 
         private void noOfRuns_Changed(object sender, System.EventArgs e)   
         {
-            noOfRuns = (int)numericUpDown2.Value;
+            _noOfRuns = (int)numericUpDown2.Value;
         }
 
         private void startingSensitivity_Changed(object sender, System.EventArgs e)
         {
-            startSensitivity = Double.Parse(textBox2.Text);
+            _startSensitivity = Double.Parse(textBox2.Text);
         }
 
         private void maximumSensitivity_Changed(object sender, System.EventArgs e)
         {
-            maxSensitivity = Double.Parse(textBox3.Text);
+            _maxSensitivity = Double.Parse(textBox3.Text);
         }
 
         private void sensitivityIncrement_Changed(object sender, System.EventArgs e)
         {
-            sensitivityIncrement = Double.Parse(textBox4.Text);
+            _sensitivityIncrement = Double.Parse(textBox4.Text);
         }
 
         #endregion
@@ -162,32 +156,32 @@ namespace BayesPointMachineForm
             Thread calcThread = new Thread(RunTests);
             calcThread.Name = "CalcThread";
             calcThread.Priority = ThreadPriority.BelowNormal;
-            totalRuns = (int)(noOfRuns * (1 + ((maxSensitivity - startSensitivity) / sensitivityIncrement)));
-            progressBar1.Maximum = totalRuns;
-            performingCalcs = true;
+            _totalRuns = (int)(_noOfRuns * (1 + ((_maxSensitivity - _startSensitivity) / _sensitivityIncrement)));
+            progressBar1.Maximum = _totalRuns;
+            _performingCalcs = true;
             calcThread.Start();
-            int prevRem = totalRuns;
+            int prevRem = _totalRuns;
             int performedInInterval=0;
             DateTime last = DateTime.Now;
             DateTime now;
             TimeSpan diff;
             int noOfSleeps = 0;
-            while (performingCalcs)
+            while (_performingCalcs)
             {
                 Thread.Sleep(100);
-                progressBar1.Value = (totalRuns - runsLeft);
+                progressBar1.Value = (_totalRuns - _runsLeft);
                 noOfSleeps++;
                 if (noOfSleeps == 200)
                 {
-                    performedInInterval = prevRem - runsLeft;
+                    performedInInterval = prevRem - _runsLeft;
                     //In case of dividing by zero
                     if (performedInInterval == 0) performedInInterval = 1;
-                    prevRem = runsLeft;
+                    prevRem = _runsLeft;
                     now = DateTime.Now;
                     diff = now - last;
-                    TimeSpan remainder = new TimeSpan((diff.Ticks / performedInInterval) * runsLeft);
+                    TimeSpan remainder = new TimeSpan((diff.Ticks / performedInInterval) * _runsLeft);
                     String timeEstimate = remainder.ToString();
-                    textBox1.Text = (runsLeft + " runs left of " + totalRuns + ". Should take roughly " + timeEstimate);
+                    textBox1.Text = (_runsLeft + " runs left of " + _totalRuns + ". Should take roughly " + timeEstimate);
                     noOfSleeps = 0;
                 }
             }
@@ -198,7 +192,7 @@ namespace BayesPointMachineForm
 
         private void RunTests()
         {
-            StreamWriter writer = new StreamWriter(resultsFilePath);
+            StreamWriter writer = new StreamWriter(_resultsFilePath);
             //int noOfFeatures = 4;
             //int noOfTestValues = 274;
             //int noOfTestValues = 15060;
@@ -208,27 +202,27 @@ namespace BayesPointMachineForm
             //string trainingFilePath = @"..\..\data\adultTraining.txt";
 
 
-            BPMDataModel trainingModel = FileUtils.ReadFile(trainingFilePath, labelAtStartOfLine, noOfFeatures, addBias);
-            BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, noisePrecision);
+            BPMDataModel trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+            BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, _noisePrecision);
 
             //string testFile = @"..\..\data\banknotestraining.txt";
             //string testFile = @"..\..\data\adultTest.txt";s
-            BPMDataModel testModel = FileUtils.ReadFile(testFilePath, labelAtStartOfLine, noOfFeatures, addBias);
+            BPMDataModel testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
             Vector[] testVectors = testModel.GetInputs();
-            runsLeft = totalRuns;
+            _runsLeft = _totalRuns;
             double accuracy = 0;
-            for (double i = startSensitivity; i <= maxSensitivity; i = (i + sensitivityIncrement))
+            for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
                 //writer.WriteLine(i);
-                for (int j = 0; j < noOfRuns; j++)
+                for (int j = 0; j < _noOfRuns; j++)
                 {
                     noisyModel = FileUtils.CreateNoisyModel(trainingModel, i);
                     //Set the test model data to have the same range plus max and min
                     //values as the noisy model, to normalise both data models to the same range
                     testModel.SetInputLimits(noisyModel.GetInputLimits());
                     testModel.ScaleFeatures();
-                    accuracy = RunBPMGeneral(noisyModel, numOfClasses, noisePrecision, addBias, testVectors, noOfFeatures, testModel.getClasses());
-                    runsLeft--;
+                    accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
+                    _runsLeft--;
                     writer.WriteLine(i + "," + accuracy);
                     //textBox1.Text = ("Done " + j + " of acc: " + i);
                 }
@@ -236,7 +230,7 @@ namespace BayesPointMachineForm
             }
             writer.Flush();
             writer.Close();
-            performingCalcs = false;
+            _performingCalcs = false;
         }
 
         private static int FindMaxValPosition(double[] values)
