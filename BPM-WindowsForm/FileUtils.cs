@@ -13,89 +13,96 @@ namespace BayesPointMachineForm
     {
         public static BPMDataModel ReadFile(string filename, bool labelAtStart, int noOfFeatures, bool addBias)
         {
-            int noOfInputs = 0;
-            StreamReader temp = new StreamReader(filename);
-            while (!temp.EndOfStream)
+            try
             {
-                temp.ReadLine();
-                noOfInputs++;
-            }
-            temp.Dispose();
-            BPMDataModel newModel = new BPMDataModel(noOfInputs, noOfFeatures);
-            List<double[]> featureData = new List<double[]>();
-            //Holds the upper and lower limits for each feature being analysed
-            List<double[]> limits = new List<double[]>(noOfFeatures);
-            for (int i = 0; i < noOfFeatures; i++)
-            {
-                double[] lim = new double[2];
-                lim[0] = Double.NaN;
-                lim[1] = Double.NaN;
-                limits.Add(lim);
-            }
-            //Initialise feature data list
-            for (int i = 0; i < noOfFeatures; i++)
-            {
-                featureData.Add(new double[noOfInputs]);
-            }
-            //The variables to hold the data being read in
-            int[] classData = new int[noOfInputs];
-            List<Vector> x = new List<Vector>();
-            List<int> y = new List<int>();
-            Vector[] featureVectors;
-            string line;
-            double[] values;
-            int index;
-            int labelIndex;
-            int currentLocation = 0;
-            using (StreamReader reader = new StreamReader(filename))
-            {
-                while (!reader.EndOfStream)
+                int noOfInputs = 0;
+                StreamReader temp = new StreamReader(filename);
+                while (!temp.EndOfStream)
                 {
-                    line = reader.ReadLine();
-                    //Allow for splitting of data in file by either tab, space or comma
-                    string[] pieces = line.Split('\t', ' ', ',');
-                    //This assumes class identifier AND ID no on each line
-                    int n = pieces.Length - 2;
-                    if (addBias)
-                    {
-                        values = new double[n + 1];
-                        values[n] = 1;
-                    }
-                    else
-                    {
-                        values = new double[n];
-                    }
-
-                    // Read feature values and labels.
-                    labelIndex = labelAtStart ? 0 : n + 1;
-                    for (int i = 0; i < noOfFeatures; i++)
-                    {
-                        index = labelAtStart ? i + 1 : i;
-                        values[i] = Double.Parse(pieces[index]);
-                        featureData[i][currentLocation] = Double.Parse(pieces[index]);
-                        if ((limits[i][0].Equals(Double.NaN)) || (values[i] < limits[i][0]))
-                        {
-                            limits[i][0] = values[i];
-                        }
-                        if ((limits[i][1].Equals(Double.NaN)) || (values[i] > limits[i][1]))
-                        {
-                            limits[i][1] = values[i];
-                        }
-                    }
-                    classData[currentLocation] = Int32.Parse(pieces[labelIndex - 1]);
-                    x.Add(Vector.FromArray(values));
-                    y.Add(Int32.Parse(pieces[labelIndex]));
-                    currentLocation++;
+                    temp.ReadLine();
+                    noOfInputs++;
                 }
-                //Clean up resources
-                reader.Dispose();
-            }
-            featureVectors = x.ToArray();
+                temp.Dispose();
+                BPMDataModel newModel = new BPMDataModel(noOfInputs, noOfFeatures);
+                List<double[]> featureData = new List<double[]>();
+                //Holds the upper and lower limits for each feature being analysed
+                List<double[]> limits = new List<double[]>(noOfFeatures);
+                for (int i = 0; i < noOfFeatures; i++)
+                {
+                    double[] lim = new double[2];
+                    lim[0] = Double.NaN;
+                    lim[1] = Double.NaN;
+                    limits.Add(lim);
+                }
+                //Initialise feature data list
+                for (int i = 0; i < noOfFeatures; i++)
+                {
+                    featureData.Add(new double[noOfInputs]);
+                }
+                //The variables to hold the data being read in
+                int[] classData = new int[noOfInputs];
+                List<Vector> x = new List<Vector>();
+                List<int> y = new List<int>();
+                Vector[] featureVectors;
+                string line;
+                double[] values;
+                int index;
+                int labelIndex;
+                int currentLocation = 0;
+                using (StreamReader reader = new StreamReader(filename))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        line = reader.ReadLine();
+                        //Allow for splitting of data in file by either tab, space or comma
+                        string[] pieces = line.Split('\t', ' ', ',');
+                        //This assumes class identifier AND ID no on each line
+                        int n = pieces.Length - 2;
+                        if (addBias)
+                        {
+                            values = new double[n + 1];
+                            values[n] = 1;
+                        }
+                        else
+                        {
+                            values = new double[n];
+                        }
 
-            newModel.SetAllVectorFeatures(featureVectors);
-            newModel.SetClasses(classData);
-            newModel.SetInputLimits(limits);
-            return newModel;
+                        // Read feature values and labels.
+                        labelIndex = labelAtStart ? 0 : n + 1;
+                        for (int i = 0; i < noOfFeatures; i++)
+                        {
+                            index = labelAtStart ? i + 1 : i;
+                            values[i] = Double.Parse(pieces[index]);
+                            featureData[i][currentLocation] = Double.Parse(pieces[index]);
+                            if ((limits[i][0].Equals(Double.NaN)) || (values[i] < limits[i][0]))
+                            {
+                                limits[i][0] = values[i];
+                            }
+                            if ((limits[i][1].Equals(Double.NaN)) || (values[i] > limits[i][1]))
+                            {
+                                limits[i][1] = values[i];
+                            }
+                        }
+                        classData[currentLocation] = Int32.Parse(pieces[labelIndex - 1]);
+                        x.Add(Vector.FromArray(values));
+                        y.Add(Int32.Parse(pieces[labelIndex]));
+                        currentLocation++;
+                    }
+                    //Clean up resources
+                    reader.Dispose();
+                }
+                featureVectors = x.ToArray();
+
+                newModel.SetAllVectorFeatures(featureVectors);
+                newModel.SetClasses(classData);
+                newModel.SetInputLimits(limits);
+                return newModel;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
 

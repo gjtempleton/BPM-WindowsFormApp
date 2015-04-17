@@ -30,6 +30,7 @@ namespace BayesPointMachineForm
         private bool _trainingSelected, _testingSelected, _resultsSelected;
         private static StreamWriter writer;
         private bool onlyWriteAggregateResults;
+        private BPMDataModel trainingModel, testModel;
         #endregion
 
         public Form1()
@@ -49,6 +50,8 @@ namespace BayesPointMachineForm
             numericUpDown1.ValueChanged += (this.noOfFeatures_Changed);
             numericUpDown2.ValueChanged += (this.noOfRuns_Changed);
             numericUpDown3.ValueChanged += (noOfClasses_Changed);
+            //Need at least two classes
+            numericUpDown3.Minimum = 2;
             textBox2.TextChanged += (this.startingSensitivity_Changed);
             textBox3.TextChanged += (this.maximumSensitivity_Changed);
             textBox4.TextChanged += (this.sensitivityIncrement_Changed);
@@ -161,41 +164,52 @@ namespace BayesPointMachineForm
             trainingFileSelect.Enabled = false;
             testFileSelect.Enabled = false;
             resultsFileSelect.Enabled = false;
-            Thread calcThread = new Thread(RunTests);
-            calcThread.Name = "CalcThread";
-            calcThread.Priority = ThreadPriority.BelowNormal;
-            _totalRuns = (int)(_noOfRuns * (1 + ((_maxSensitivity - _startSensitivity) / _sensitivityIncrement)));
-            progressBar1.Maximum = _totalRuns;
-            _performingCalcs = true;
-            calcThread.Start();
-            int prevRem = _totalRuns;
-            int performedInInterval=0;
-            DateTime last = DateTime.Now;
-            DateTime now;
-            TimeSpan diff;
-            int noOfSleeps = 0;
-            while (_performingCalcs)
+            try
             {
-                Thread.Sleep(100);
-                progressBar1.Value = (_totalRuns - _runsLeft);
-                noOfSleeps++;
-                if (noOfSleeps == 200)
+                trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                Thread calcThread = new Thread(RunTests);
+                calcThread.Name = "CalcThread";
+                calcThread.Priority = ThreadPriority.BelowNormal;
+                _totalRuns = (int) (_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
+                progressBar1.Maximum = _totalRuns;
+                _performingCalcs = true;
+                calcThread.Start();
+                int prevRem = _totalRuns;
+                int performedInInterval = 0;
+                DateTime last = DateTime.Now;
+                DateTime now;
+                TimeSpan diff;
+                int noOfSleeps = 0;
+                while (_performingCalcs)
                 {
-                    performedInInterval = prevRem - _runsLeft;
-                    //In case of dividing by zero
-                    if (performedInInterval == 0) performedInInterval = 1;
-                    prevRem = _runsLeft;
-                    now = DateTime.Now;
-                    diff = now - last;
-                    TimeSpan remainder = new TimeSpan((diff.Ticks / performedInInterval) * _runsLeft);
-                    String timeEstimate = remainder.ToString();
-                    textBox1.Text = (_runsLeft + " runs left of " + _totalRuns + ". Should take roughly " + timeEstimate);
-                    noOfSleeps = 0;
+                    Thread.Sleep(100);
+                    progressBar1.Value = (_totalRuns - _runsLeft);
+                    noOfSleeps++;
+                    if (noOfSleeps == 200)
+                    {
+                        performedInInterval = prevRem - _runsLeft;
+                        //In case of dividing by zero
+                        if (performedInInterval == 0) performedInInterval = 1;
+                        prevRem = _runsLeft;
+                        now = DateTime.Now;
+                        diff = now - last;
+                        TimeSpan remainder = new TimeSpan((diff.Ticks/performedInInterval)*_runsLeft);
+                        String timeEstimate = remainder.ToString();
+                        textBox1.Text = (_runsLeft + " runs left of " + _totalRuns + ". Should take roughly " +
+                                         timeEstimate);
+                        noOfSleeps = 0;
+                    }
                 }
+                trainingFileSelect.Enabled = true;
+                testFileSelect.Enabled = true;
+                resultsFileSelect.Enabled = true;
             }
-            trainingFileSelect.Enabled = true;
-            testFileSelect.Enabled = true;
-            resultsFileSelect.Enabled = true;
+            catch (Exception exception)
+            {
+                ShowDialog("Sorry, there was an error reading the input data", "Error", true);
+            }
+            
         }
 
         private void RunTests()
@@ -209,13 +223,10 @@ namespace BayesPointMachineForm
             //string trainingFilePath = @"..\..\data\banknotesdata.txt";
             //string trainingFilePath = @"..\..\data\adultTraining.txt";
 
-
-            BPMDataModel trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
             BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, _noisePrecision);
 
             //string testFile = @"..\..\data\banknotestraining.txt";
             //string testFile = @"..\..\data\adultTest.txt";s
-            BPMDataModel testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
             Vector[] testVectors = testModel.GetInputs();
             _runsLeft = _totalRuns;
             double accuracy = 0;
@@ -270,6 +281,26 @@ namespace BayesPointMachineForm
                 i++;
             }
             return -1;
+        }
+
+        public void ShowDialog(string text, string title, bool error)
+        {
+            Form messageForm = new Form();
+            messageForm.Width = 300;
+            messageForm.Height = 100;
+            messageForm.Text = title;
+            //Create a text label for it to pass the user the message
+            Label textLabel = new Label() { Left = 50, Top = 20, Text = text };
+            Button dismissButton = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70 };
+            dismissButton.Click += (sender, e) => { messageForm.Close(); };
+            //If caused by an error force the user to reselect the two files
+            if (error)
+            {
+                _trainingSelected = false;
+                _testingSelected = false;
+            }
+            messageForm.Controls.Add(textLabel);
+            messageForm.ShowDialog();
         }
 
 
