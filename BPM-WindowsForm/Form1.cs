@@ -59,32 +59,22 @@ namespace BayesPointMachineForm
 
         private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int noOfFeatures, int[] testResults)
         {
-            double accuracy;
-            int[] labels = model.GetClasses();
             int correctCount = 0;
-            Vector[] featureVectors = new Vector[noOfFeatures];
             BPM bpm = new BPM(numClasses, noisePrecision);
             VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.GetClasses());
             string actualWeights = posteriorWeights[1].ToString();
             int breakLocation = actualWeights.IndexOf("\r");
             actualWeights = actualWeights.Substring(0, breakLocation);
             writer.WriteLine("Weights= " + actualWeights);
-			//Console.WriteLine("Weights=" + StringUtil.ArrayToString(posteriorWeights));
-
-            //Console.WriteLine("\nPredictions:");
             Discrete[] predictions = bpm.Test(testSet);
             int i = 0;
+
             foreach (Discrete prediction in predictions)
             {
-                //Console.WriteLine(prediction);
                 if (FindMaxValPosition(prediction.GetProbs().ToArray()) == testResults[i]) correctCount++;
-                //if ((prediction.GetProbs().ToArray()[0] > 0.5) && (testResults[i] == 0) || ((prediction.GetProbs().ToArray()[1] > 0.5) && (testResults[i] == 1)))
-                //{
-                //    correctCount++;
-                //}
                 i++;
             }
-            accuracy = ((double)correctCount / predictions.Length) * 100;
+            double accuracy = ((double)correctCount / predictions.Length) * 100;
             double logEvidence = bpm.GetLogEvidence();
             return accuracy;
         }
@@ -215,18 +205,8 @@ namespace BayesPointMachineForm
         private void RunTests()
         {
             writer = new StreamWriter(_resultsFilePath);
-            //int noOfFeatures = 4;
-            //int noOfTestValues = 274;
-            //int noOfTestValues = 15060;
-            //int noOfTrainingValues = 1098;
-            //int noOfTrainingValues = 30162;
-            //string trainingFilePath = @"..\..\data\banknotesdata.txt";
-            //string trainingFilePath = @"..\..\data\adultTraining.txt";
 
             BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, _noisePrecision);
-
-            //string testFile = @"..\..\data\banknotestraining.txt";
-            //string testFile = @"..\..\data\adultTest.txt";s
             Vector[] testVectors = testModel.GetInputs();
             _runsLeft = _totalRuns;
             double accuracy = 0;
@@ -242,7 +222,6 @@ namespace BayesPointMachineForm
             //Now loop through noisy models
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
-                //writer.WriteLine(i);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
                     noisyModel = FileUtils.CreateNoisyModel(trainingModel, i);
