@@ -2,6 +2,7 @@
 using MicrosoftResearch.Infer.Distributions;
 using MicrosoftResearch.Infer.Maths;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,8 @@ namespace BayesPointMachineForm
         private int _totalRuns, _runsLeft;
         private bool _addBias = false;
         private bool _trainingSelected, _testingSelected, _resultsSelected;
+        private static StreamWriter writer;
+        private bool onlyWriteAggregateResults;
         #endregion
 
         public Form1()
@@ -58,6 +61,10 @@ namespace BayesPointMachineForm
             Vector[] featureVectors = new Vector[noOfFeatures];
             BPM bpm = new BPM(numClasses, noisePrecision);
             VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.GetClasses());
+            string actualWeights = posteriorWeights[1].ToString();
+            int breakLocation = actualWeights.IndexOf("\r");
+            actualWeights = actualWeights.Substring(0, breakLocation);
+            writer.WriteLine("Weights= " + actualWeights);
 			//Console.WriteLine("Weights=" + StringUtil.ArrayToString(posteriorWeights));
 
             //Console.WriteLine("\nPredictions:");
@@ -192,7 +199,7 @@ namespace BayesPointMachineForm
 
         private void RunTests()
         {
-            StreamWriter writer = new StreamWriter(_resultsFilePath);
+            writer = new StreamWriter(_resultsFilePath);
             //int noOfFeatures = 4;
             //int noOfTestValues = 274;
             //int noOfTestValues = 15060;
@@ -211,6 +218,8 @@ namespace BayesPointMachineForm
             Vector[] testVectors = testModel.GetInputs();
             _runsLeft = _totalRuns;
             double accuracy = 0;
+            List<double> vals = new List<double>(_noOfRuns);
+            double accForGroup, stdevForGroup;
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
                 //writer.WriteLine(i);
@@ -223,10 +232,17 @@ namespace BayesPointMachineForm
                     testModel.ScaleFeatures();
                     accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
                     _runsLeft--;
-                    writer.WriteLine(i + "," + accuracy);
-                    //textBox1.Text = ("Done " + j + " of acc: " + i);
+                    if(!onlyWriteAggregateResults) writer.WriteLine(i + "," + accuracy);
+                    else vals.Add(accuracy);
                 }
                 //progressBar1.Increment(1);
+                if (onlyWriteAggregateResults)
+                {
+                    accForGroup = FileUtils.Mean(vals);
+                    stdevForGroup = FileUtils.StandardDeviation(vals);
+                    vals.Clear();
+                    writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
+                }
             }
             writer.Flush();
             writer.Close();

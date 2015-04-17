@@ -132,7 +132,33 @@ namespace BayesPointMachineForm
             double laplNoise = (mu - b * (sign * (Math.Log(1 - 2 * (Math.Abs(randomValue))))));
             newValue = initialValue + laplNoise;
             return newValue;
+        }
 
+        //Use Welford's method
+        public static double StandardDeviation(List<double> valueList)
+        {
+            double M = 0.0;
+            double S = 0.0;
+            int k = 1;
+            foreach (double value in valueList)
+            {
+                double tmpM = M;
+                M += (value - tmpM) / k;
+                S += (value - tmpM) * (value - M);
+                k++;
+            }
+            //Use k-1 as have whole population, not just sample
+            return Math.Sqrt(S / (k - 1));
+        }
+
+        public static double Mean(List<double> valueList)
+        {
+            double sum = 0.0;
+            foreach (double value in valueList)
+            {
+                sum += value;
+            }
+            return sum / valueList.Count;
         }
     }
 }

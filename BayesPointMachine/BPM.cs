@@ -122,9 +122,8 @@ namespace BayesPointMachine
             Variable<bool> evidence = Variable.Bernoulli(0.5).Named("evidence");
             Range classes = new Range(numOfClasses);
             IfBlock block = Variable.If(evidence);
-	        VariableArray<VectorGaussian> wlearned = trainModel.wPrior;
-            VariableArray<VectorGaussian> x = Variable.Array<VectorGaussian>(classes).Named("wPrior"); 
-            x.ObservedValue= Util.ArrayInit(numOfClasses, c => (c == 0) ?
+	        VectorGaussian[] wObserved = trainModel.wPrior.ObservedValue;
+            VectorGaussian[] empty = Util.ArrayInit(numOfClasses, c => (c == 0) ?
                 VectorGaussian.PointMass(Vector.Zero(numOfFeatures)) :
                 VectorGaussian.FromMeanAndPrecision(Vector.Zero(numOfFeatures), PositiveDefiniteMatrix.Identity(numOfFeatures)));
             block.CloseBlock();
@@ -198,6 +197,6 @@ namespace BayesPointMachine
 		}
 
 		#endregion
-	}
+    }
 }
 
