@@ -48,6 +48,7 @@ namespace BayesPointMachineForm
             checkBox1.Click += (this.checkbox1_Click);
             numericUpDown1.ValueChanged += (this.noOfFeatures_Changed);
             numericUpDown2.ValueChanged += (this.noOfRuns_Changed);
+            numericUpDown3.ValueChanged += (noOfClasses_Changed);
             textBox2.TextChanged += (this.startingSensitivity_Changed);
             textBox3.TextChanged += (this.maximumSensitivity_Changed);
             textBox4.TextChanged += (this.sensitivityIncrement_Changed);
@@ -81,12 +82,7 @@ namespace BayesPointMachineForm
                 i++;
             }
             accuracy = ((double)correctCount / predictions.Length) * 100;
-            //Console.WriteLine();
             double logEvidence = bpm.GetLogEvidence();
-            //Console.WriteLine("No of correct predictions: " + correctCount);
-            //Console.WriteLine("Evidence for model:");
-            //Console.WriteLine(logEvidence);
-            //Console.WriteLine();
             return accuracy;
         }
 
@@ -150,6 +146,11 @@ namespace BayesPointMachineForm
         private void sensitivityIncrement_Changed(object sender, System.EventArgs e)
         {
             _sensitivityIncrement = Double.Parse(textBox4.Text);
+        }
+
+        private void noOfClasses_Changed(object sender, System.EventArgs e)
+        {
+            _numOfClasses = (int) numericUpDown3.Value;
         }
 
         #endregion
@@ -220,6 +221,14 @@ namespace BayesPointMachineForm
             double accuracy = 0;
             List<double> vals = new List<double>(_noOfRuns);
             double accForGroup, stdevForGroup;
+            //Always write the result without any noise to begin
+            BPMDataModel temp = trainingModel;
+            temp.ScaleFeatures();
+            testModel.SetInputLimits(temp.GetInputLimits());
+            testModel.ScaleFeatures();
+            accuracy = RunBPMGeneral(temp, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
+            writer.WriteLine(0.0 + "," + accuracy);
+            //Now loop through noisy models
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
                 //writer.WriteLine(i);
@@ -235,7 +244,8 @@ namespace BayesPointMachineForm
                     if(!onlyWriteAggregateResults) writer.WriteLine(i + "," + accuracy);
                     else vals.Add(accuracy);
                 }
-                //progressBar1.Increment(1);
+                //If onlyWriteAggregateResults it calculates the mean and standard dev
+                //for the results for each value of sigma
                 if (onlyWriteAggregateResults)
                 {
                     accForGroup = FileUtils.Mean(vals);
