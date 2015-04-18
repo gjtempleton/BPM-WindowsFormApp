@@ -233,7 +233,6 @@
             this.label6.Size = new System.Drawing.Size(94, 13);
             this.label6.TabIndex = 18;
             this.label6.Text = "Number of classes";
-            this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
             // Form1
             // 

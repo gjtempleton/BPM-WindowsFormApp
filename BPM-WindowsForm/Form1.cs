@@ -38,6 +38,7 @@ namespace BayesPointMachineForm
             InitializeComponent();
             SetHandlers();
             progressBar1.Minimum = 0;
+            this.Text = "Differential Privacy Analyser";
         }
 
         private void SetHandlers()
