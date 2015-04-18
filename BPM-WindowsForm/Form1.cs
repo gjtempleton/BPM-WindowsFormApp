@@ -68,6 +68,8 @@ namespace BayesPointMachineForm
             textBox2.TextChanged += (this.startingSensitivity_Changed);
             textBox3.TextChanged += (this.maximumSensitivity_Changed);
             textBox4.TextChanged += (this.sensitivityIncrement_Changed);
+            checkBox2.Click += (aggregateResults_Changed);
+            checkBox3.Click += (writeGaussians_Changed);
         }
 
         private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int noOfFeatures, int[] testResults)
@@ -184,6 +186,16 @@ namespace BayesPointMachineForm
         private void noOfClasses_Changed(object sender, System.EventArgs e)
         {
             _numOfClasses = (int) numericUpDown3.Value;
+        }
+
+        private void aggregateResults_Changed(object sender, EventArgs e)
+        {
+            onlyWriteAggregateResults = checkBox2.Checked;
+        }
+
+        private void writeGaussians_Changed(object sender, EventArgs e)
+        {
+            writeGaussians = checkBox3.Checked;
         }
 
         #endregion
