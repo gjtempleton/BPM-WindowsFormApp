@@ -136,17 +136,42 @@ namespace BayesPointMachineForm
 
         private void startingSensitivity_Changed(object sender, System.EventArgs e)
         {
-            _startSensitivity = Double.Parse(textBox2.Text);
+            try
+            {
+                _startSensitivity = Double.Parse(textBox2.Text);
+            }
+            catch (FormatException)
+            {
+                ShowDialog("Error in number format", "Error", false);
+                textBox2.Text = _startSensitivity.ToString();
+            }
         }
 
         private void maximumSensitivity_Changed(object sender, System.EventArgs e)
         {
-            _maxSensitivity = Double.Parse(textBox3.Text);
+            try
+            {
+                _maxSensitivity = Double.Parse(textBox3.Text);
+            }
+            catch (FormatException)
+            {
+                ShowDialog("Error in number format", "Error", false);
+                textBox3.Text = _maxSensitivity.ToString();
+            }
+
         }
 
         private void sensitivityIncrement_Changed(object sender, System.EventArgs e)
         {
-            _sensitivityIncrement = Double.Parse(textBox4.Text);
+            try
+            {
+                _sensitivityIncrement = Double.Parse(textBox4.Text);
+            }
+            catch (FormatException)
+            {
+                ShowDialog("Error in number format", "Error", false);
+                textBox4.Text = _sensitivityIncrement.ToString();
+            }
         }
 
         private void noOfClasses_Changed(object sender, System.EventArgs e)
@@ -270,7 +295,7 @@ namespace BayesPointMachineForm
             return -1;
         }
 
-        public void ShowDialog(string text, string title, bool error)
+        public void ShowDialog(string text, string title, bool fileError)
         {
             Form messageForm = new Form();
             messageForm.Width = 300;
@@ -281,7 +306,7 @@ namespace BayesPointMachineForm
             Button dismissButton = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70 };
             dismissButton.Click += (sender, e) => { messageForm.Close(); };
             //If caused by an error force the user to reselect the two files
-            if (error)
+            if (fileError)
             {
                 _trainingSelected = false;
                 _testingSelected = false;
