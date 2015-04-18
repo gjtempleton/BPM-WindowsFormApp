@@ -45,7 +45,11 @@ namespace BayesPointMachineForm
         private void SetHandlers()
         {
             trainingFileSelect.Click += (this.trainingFileSelect_Click);
+            openFileDialog1.Filter = "Text and CSV Files (.txt, .csv)|*.txt;*.csv|All Files (*.*)|*.*";
+            openFileDialog1.FilterIndex = 1;
             testFileSelect.Click += (this.testFileSelect_Click);
+            openFileDialog2.Filter = "Text and CSV Files (.txt, .csv)|*.txt;*.csv|All Files (*.*)|*.*";
+            openFileDialog2.FilterIndex = 1;
             beginButton.Click += (this.begin_Click);
             resultsFileSelect.Click += (this.saveFileSelect_Click);
             checkBox1.Click += (this.checkbox1_Click);
@@ -107,6 +111,8 @@ namespace BayesPointMachineForm
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                saveFileDialog1.AddExtension = true;
+                saveFileDialog1.DefaultExt = ".csv";
                 _resultsFilePath = saveFileDialog1.FileName;
                 _resultsSelected = true;
                 if (_trainingSelected && _testingSelected && _resultsSelected) beginButton.Enabled = true;
