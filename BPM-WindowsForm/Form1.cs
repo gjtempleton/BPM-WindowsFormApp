@@ -30,9 +30,8 @@ namespace BayesPointMachineForm
         private bool _addBias = false;
         private bool _trainingSelected, _testingSelected, _resultsSelected;
         private static StreamWriter _writer;
-        private static bool onlyWriteAggregateResults;
-        private static bool writeGaussians;
-        private BPMDataModel trainingModel, testModel;
+        private static bool _onlyWriteAggregateResults, _writeGaussians;
+        private BPMDataModel _trainingModel, _testModel;
         #endregion
 
         public Form1()
@@ -51,36 +50,36 @@ namespace BayesPointMachineForm
 
         private void SetHandlers()
         {
-            trainingFileSelect.Click += (this.trainingFileSelect_Click);
-            openFileDialog1.Filter = "Text and CSV Files (.txt, .csv)|*.txt;*.csv|All Files (*.*)|*.*";
+            trainingFileSelect.Click += (trainingFileSelect_Click);
+            openFileDialog1.Filter = @"Text and CSV Files (.txt, .csv)|*.txt;*.csv|All Files (*.*)|*.*";
             openFileDialog1.FilterIndex = 1;
-            testFileSelect.Click += (this.testFileSelect_Click);
-            openFileDialog2.Filter = "Text and CSV Files (.txt, .csv)|*.txt;*.csv|All Files (*.*)|*.*";
+            testFileSelect.Click += (testFileSelect_Click);
+            openFileDialog2.Filter = @"Text and CSV Files (.txt, .csv)|*.txt;*.csv|All Files (*.*)|*.*";
             openFileDialog2.FilterIndex = 1;
-            beginButton.Click += (this.begin_Click);
-            resultsFileSelect.Click += (this.saveFileSelect_Click);
-            checkBox1.Click += (this.checkbox1_Click);
-            numericUpDown1.ValueChanged += (this.noOfFeatures_Changed);
-            numericUpDown2.ValueChanged += (this.noOfRuns_Changed);
+            beginButton.Click += (begin_Click);
+            resultsFileSelect.Click += (saveFileSelect_Click);
+            checkBox1.Click += (checkbox1_Click);
+            numericUpDown1.ValueChanged += (noOfFeatures_Changed);
+            numericUpDown2.ValueChanged += (noOfRuns_Changed);
             numericUpDown3.ValueChanged += (noOfClasses_Changed);
             //Need at least two classes
             numericUpDown3.Minimum = 2;
-            textBox2.TextChanged += (this.startingSensitivity_Changed);
-            textBox3.TextChanged += (this.maximumSensitivity_Changed);
-            textBox4.TextChanged += (this.sensitivityIncrement_Changed);
+            textBox2.TextChanged += (startingSensitivity_Changed);
+            textBox3.TextChanged += (maximumSensitivity_Changed);
+            textBox4.TextChanged += (sensitivityIncrement_Changed);
             checkBox2.Click += (aggregateResults_Changed);
             checkBox3.Click += (writeGaussians_Changed);
         }
 
-        private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int noOfFeatures, int[] testResults)
+        private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int[] testResults)
         {
             int correctCount = 0;
             BPM bpm = new BPM(numClasses, noisePrecision);
             VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.GetClasses());
             string actualWeights = posteriorWeights[1].ToString();
-            int breakLocation = actualWeights.IndexOf("\r");
+            int breakLocation = actualWeights.IndexOf("\r", StringComparison.Ordinal);
             actualWeights = actualWeights.Substring(0, breakLocation);
-            if(!onlyWriteAggregateResults&&writeGaussians)_writer.WriteLine("Weights= " + actualWeights);
+            if(!_onlyWriteAggregateResults&&_writeGaussians)_writer.WriteLine("Weights= " + actualWeights);
             Discrete[] predictions = bpm.Test(testSet);
             int i = 0;
 
@@ -96,7 +95,7 @@ namespace BayesPointMachineForm
 
         #region handlers
 
-        private void trainingFileSelect_Click(object sender, System.EventArgs e)
+        private void trainingFileSelect_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -106,7 +105,7 @@ namespace BayesPointMachineForm
             }
         }
 
-        private void testFileSelect_Click(object sender, System.EventArgs e)
+        private void testFileSelect_Click(object sender, EventArgs e)
         {
             if(openFileDialog2.ShowDialog() == DialogResult.OK)
             {
@@ -116,7 +115,7 @@ namespace BayesPointMachineForm
             }
         }
 
-        private void saveFileSelect_Click(object sender, System.EventArgs e)
+        private void saveFileSelect_Click(object sender, EventArgs e)
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -128,22 +127,22 @@ namespace BayesPointMachineForm
             }
         }
 
-        private void checkbox1_Click(object sender, System.EventArgs e)
+        private void checkbox1_Click(object sender, EventArgs e)
         {
             _labelAtStartOfLine = checkBox1.Checked;
         }
 
-        private void noOfFeatures_Changed(object sender, System.EventArgs e)
+        private void noOfFeatures_Changed(object sender, EventArgs e)
         {
             _noOfFeatures = (int)numericUpDown1.Value;
         }
 
-        private void noOfRuns_Changed(object sender, System.EventArgs e)   
+        private void noOfRuns_Changed(object sender, EventArgs e)   
         {
             _noOfRuns = (int)numericUpDown2.Value;
         }
 
-        private void startingSensitivity_Changed(object sender, System.EventArgs e)
+        private void startingSensitivity_Changed(object sender, EventArgs e)
         {
             try
             {
@@ -152,11 +151,11 @@ namespace BayesPointMachineForm
             catch (FormatException)
             {
                 ShowDialog("Error in number format", "Error", false);
-                textBox2.Text = _startSensitivity.ToString();
+                textBox2.Text = _startSensitivity.ToString(CultureInfo.InvariantCulture);
             }
         }
 
-        private void maximumSensitivity_Changed(object sender, System.EventArgs e)
+        private void maximumSensitivity_Changed(object sender, EventArgs e)
         {
             try
             {
@@ -165,12 +164,12 @@ namespace BayesPointMachineForm
             catch (FormatException)
             {
                 ShowDialog("Error in number format", "Error", false);
-                textBox3.Text = _maxSensitivity.ToString();
+                textBox3.Text = _maxSensitivity.ToString(CultureInfo.InvariantCulture);
             }
 
         }
 
-        private void sensitivityIncrement_Changed(object sender, System.EventArgs e)
+        private void sensitivityIncrement_Changed(object sender, EventArgs e)
         {
             try
             {
@@ -183,24 +182,24 @@ namespace BayesPointMachineForm
             }
         }
 
-        private void noOfClasses_Changed(object sender, System.EventArgs e)
+        private void noOfClasses_Changed(object sender, EventArgs e)
         {
             _numOfClasses = (int) numericUpDown3.Value;
         }
 
         private void aggregateResults_Changed(object sender, EventArgs e)
         {
-            onlyWriteAggregateResults = checkBox2.Checked;
+            _onlyWriteAggregateResults = checkBox2.Checked;
         }
 
         private void writeGaussians_Changed(object sender, EventArgs e)
         {
-            writeGaussians = checkBox3.Checked;
+            _writeGaussians = checkBox3.Checked;
         }
 
         #endregion
 
-        private void begin_Click(object sender, System.EventArgs e)
+        private void begin_Click(object sender, EventArgs e)
         {
             beginButton.Enabled = false;
             trainingFileSelect.Enabled = false;
@@ -208,8 +207,8 @@ namespace BayesPointMachineForm
             resultsFileSelect.Enabled = false;
             try
             {
-                trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
-                testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                 Thread calcThread = new Thread(RunTests);
                 calcThread.Name = "CalcThread";
                 calcThread.Priority = ThreadPriority.BelowNormal;
@@ -218,7 +217,7 @@ namespace BayesPointMachineForm
                 _performingCalcs = true;
                 calcThread.Start();
                 int prevRem = _totalRuns;
-                int performedInInterval = 0;
+                int performedInInterval;
                 DateTime last = DateTime.Now;
                 DateTime now;
                 TimeSpan diff;
@@ -236,7 +235,7 @@ namespace BayesPointMachineForm
                         diff = now - last;
                         TimeSpan remainder = new TimeSpan((diff.Ticks/performedInInterval)*_runsLeft);
                         String timeEstimate = remainder.ToString();
-                        textBox1.Text = (_runsLeft + " runs left of " + _totalRuns + ". Should take roughly " +
+                        textBox1.Text = (_runsLeft + @" runs left of " + _totalRuns + @". Should take roughly " +
                                          timeEstimate);
                     }
                 }
@@ -246,7 +245,7 @@ namespace BayesPointMachineForm
             }
             catch (Exception exception)
             {
-                ShowDialog("Sorry, there was an error reading the input data", "Error", true);
+                ShowDialog("Sorry, there was an error reading the input data" + exception.GetType(), "Error", true);
             }
             
         }
@@ -255,10 +254,10 @@ namespace BayesPointMachineForm
         {
             _writer = new StreamWriter(_resultsFilePath);
 
-            BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, _noisePrecision);
-            Vector[] testVectors = testModel.GetInputs();
+            BPMDataModel noisyModel;// = FileUtils.CreateNoisyModel(_trainingModel, _noisePrecision);
+            Vector[] testVectors = _testModel.GetInputs();
             _runsLeft = _totalRuns;
-            double accuracy = 0;
+            double accuracy;
             List<double> vals = new List<double>(_noOfRuns);
             double accForGroup, stdevForGroup;
             //Always write the result without any noise to begin
@@ -266,26 +265,26 @@ namespace BayesPointMachineForm
             //temp.ScaleFeatures();
             //testModel.SetInputLimits(temp.GetInputLimits());
             //testModel.ScaleFeatures();
-            accuracy = RunBPMGeneral(trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
+            accuracy = RunBPMGeneral(_trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _testModel.GetClasses());
             _writer.WriteLine(0.0 + "," + accuracy);
             //Now loop through noisy models
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
                 for (int j = 0; j < _noOfRuns; j++)
                 {
-                    noisyModel = FileUtils.CreateNoisyModel(trainingModel, i);
+                    noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
                     //Set the test model data to have the same range plus max and min
                     //values as the noisy model, to normalise both data models to the same range
                     //testModel.SetInputLimits(noisyModel.GetInputLimits());
                     //testModel.ScaleFeatures();
-                    accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
+                    accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _testModel.GetClasses());
                     _runsLeft--;
-                    if(!onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
+                    if(!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
                     else vals.Add(accuracy);
                 }
                 //If onlyWriteAggregateResults it calculates the mean and standard dev
                 //for the results for each value of sigma
-                if (onlyWriteAggregateResults)
+                if (_onlyWriteAggregateResults)
                 {
                     accForGroup = FileUtils.Mean(vals);
                     stdevForGroup = FileUtils.StandardDeviation(vals);
@@ -304,7 +303,7 @@ namespace BayesPointMachineForm
             int i =0;
             foreach (double val in values)
             {
-                if (val == maxValue)
+                if (Math.Abs(val - maxValue) < 0.1)
                     return i;
                 i++;
             }
@@ -319,7 +318,7 @@ namespace BayesPointMachineForm
             messageForm.Text = title;
             //Create a text label for it to pass the user the message
             Label textLabel = new Label() { Left = 50, Top = 20, Text = text };
-            Button dismissButton = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70 };
+            Button dismissButton = new Button() { Text = @"Ok", Left = 350, Width = 100, Top = 70 };
             dismissButton.Click += (sender, e) => { messageForm.Close(); };
             //If caused by an error force the user to reselect the two files
             if (fileError)
