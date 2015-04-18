@@ -29,7 +29,8 @@ namespace BayesPointMachineForm
         private bool _addBias = false;
         private bool _trainingSelected, _testingSelected, _resultsSelected;
         private static StreamWriter writer;
-        private bool onlyWriteAggregateResults;
+        private static bool onlyWriteAggregateResults;
+        private static bool writeGaussians;
         private BPMDataModel trainingModel, testModel;
         #endregion
 
@@ -66,7 +67,7 @@ namespace BayesPointMachineForm
             string actualWeights = posteriorWeights[1].ToString();
             int breakLocation = actualWeights.IndexOf("\r");
             actualWeights = actualWeights.Substring(0, breakLocation);
-            writer.WriteLine("Weights= " + actualWeights);
+            if(!onlyWriteAggregateResults&&writeGaussians)writer.WriteLine("Weights= " + actualWeights);
             Discrete[] predictions = bpm.Test(testSet);
             int i = 0;
 
