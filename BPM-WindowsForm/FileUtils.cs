@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BayesPointMachine;
 using MicrosoftResearch.Infer.Maths;
 
 namespace BayesPointMachineForm
@@ -13,48 +9,47 @@ namespace BayesPointMachineForm
     {
         public static BPMDataModel ReadFile(string filename, bool labelAtStart, int noOfFeatures, bool addBias)
         {
-            try
+            int noOfInputs = 0;
+            StreamReader temp = new StreamReader(filename);
+            while (!temp.EndOfStream)
             {
-                int noOfInputs = 0;
-                StreamReader temp = new StreamReader(filename);
-                while (!temp.EndOfStream)
+                temp.ReadLine();
+                noOfInputs++;
+            }
+            temp.Dispose();
+            BPMDataModel newModel = new BPMDataModel(noOfInputs, noOfFeatures);
+            List<double[]> featureData = new List<double[]>();
+            //Holds the upper and lower limits for each feature being analysed
+            List<double[]> limits = new List<double[]>(noOfFeatures);
+            for (int i = 0; i < noOfFeatures; i++)
+            {
+                double[] lim = new double[2];
+                lim[0] = Double.NaN;
+                lim[1] = Double.NaN;
+                limits.Add(lim);
+            }
+            //Initialise feature data list
+            for (int i = 0; i < noOfFeatures; i++)
+            {
+                featureData.Add(new double[noOfInputs]);
+            }
+            //The variables to hold the data being read in
+            int[] classData = new int[noOfInputs];
+            List<Vector> x = new List<Vector>();
+            Vector[] featureVectors;
+            string line;
+            double[] values;
+            int index;
+            int labelIndex;
+            int currentLocation = 0;
+            using (StreamReader reader = new StreamReader(filename))
+            {
+                while (!reader.EndOfStream)
                 {
-                    temp.ReadLine();
-                    noOfInputs++;
-                }
-                temp.Dispose();
-                BPMDataModel newModel = new BPMDataModel(noOfInputs, noOfFeatures);
-                List<double[]> featureData = new List<double[]>();
-                //Holds the upper and lower limits for each feature being analysed
-                List<double[]> limits = new List<double[]>(noOfFeatures);
-                for (int i = 0; i < noOfFeatures; i++)
-                {
-                    double[] lim = new double[2];
-                    lim[0] = Double.NaN;
-                    lim[1] = Double.NaN;
-                    limits.Add(lim);
-                }
-                //Initialise feature data list
-                for (int i = 0; i < noOfFeatures; i++)
-                {
-                    featureData.Add(new double[noOfInputs]);
-                }
-                //The variables to hold the data being read in
-                int[] classData = new int[noOfInputs];
-                List<Vector> x = new List<Vector>();
-                List<int> y = new List<int>();
-                Vector[] featureVectors;
-                string line;
-                double[] values;
-                int index;
-                int labelIndex;
-                int currentLocation = 0;
-                using (StreamReader reader = new StreamReader(filename))
-                {
-                    while (!reader.EndOfStream)
+                    line = reader.ReadLine();
+                    //Allow for splitting of data in file by either tab, space or comma
+                    if (line != null)
                     {
-                        line = reader.ReadLine();
-                        //Allow for splitting of data in file by either tab, space or comma
                         string[] pieces = line.Split('\t', ' ', ',');
                         //This assumes class identifier AND ID no on each line
                         int n = pieces.Length - 2;
@@ -86,23 +81,18 @@ namespace BayesPointMachineForm
                         }
                         classData[currentLocation] = Int32.Parse(pieces[labelIndex - 1]);
                         x.Add(Vector.FromArray(values));
-                        y.Add(Int32.Parse(pieces[labelIndex]));
-                        currentLocation++;
                     }
-                    //Clean up resources
-                    reader.Dispose();
+                    currentLocation++;
                 }
-                featureVectors = x.ToArray();
+                //Clean up resources
+                reader.Dispose();
+            }
+            featureVectors = x.ToArray();
 
-                newModel.SetAllVectorFeatures(featureVectors);
-                newModel.SetClasses(classData);
-                newModel.SetInputLimits(limits);
-                return newModel;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            newModel.SetAllVectorFeatures(featureVectors);
+            newModel.SetClasses(classData);
+            newModel.SetInputLimits(limits);
+            return newModel;
         }
 
 
@@ -110,7 +100,6 @@ namespace BayesPointMachineForm
         {
             Random generator = new Random();
             BPMDataModel noisyModel = new BPMDataModel(model.GetInputs().Length, model.GetNoOfFeatures());
-            Vector[] currFeatures = model.GetInputs();
             List<double> ranges = model.GetRanges();
             double[] values = new double[model.GetInputs()[0].Count];
             List<Vector> x = new List<Vector>();
@@ -144,18 +133,18 @@ namespace BayesPointMachineForm
         //Use Welford's method
         public static double StandardDeviation(List<double> valueList)
         {
-            double M = 0.0;
-            double S = 0.0;
+            double m = 0.0;
+            double s = 0.0;
             int k = 1;
             foreach (double value in valueList)
             {
-                double tmpM = M;
-                M += (value - tmpM) / k;
-                S += (value - tmpM) * (value - M);
+                double tmpM = m;
+                m += (value - tmpM) / k;
+                s += (value - tmpM) * (value - m);
                 k++;
             }
             //Use k-1 as have whole population, not just sample
-            return Math.Sqrt(S / (k - 1));
+            return Math.Sqrt(s / (k - 1));
         }
 
         public static double Mean(List<double> valueList)
