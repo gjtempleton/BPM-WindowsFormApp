@@ -210,13 +210,11 @@ namespace BayesPointMachineForm
                 DateTime last = DateTime.Now;
                 DateTime now;
                 TimeSpan diff;
-                int noOfSleeps = 0;
                 while (_performingCalcs)
                 {
                     Thread.Sleep(100);
                     progressBar1.Value = (_totalRuns - _runsLeft);
-                    noOfSleeps++;
-                    if (noOfSleeps == 200)
+                    if ((progressBar1.Value)%10 == 0)
                     {
                         performedInInterval = prevRem - _runsLeft;
                         //In case of dividing by zero
@@ -228,7 +226,6 @@ namespace BayesPointMachineForm
                         String timeEstimate = remainder.ToString();
                         textBox1.Text = (_runsLeft + " runs left of " + _totalRuns + ". Should take roughly " +
                                          timeEstimate);
-                        noOfSleeps = 0;
                     }
                 }
                 trainingFileSelect.Enabled = true;
