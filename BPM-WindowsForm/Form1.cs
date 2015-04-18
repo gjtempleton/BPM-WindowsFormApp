@@ -3,6 +3,7 @@ using MicrosoftResearch.Infer.Distributions;
 using MicrosoftResearch.Infer.Maths;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,8 +18,8 @@ namespace BayesPointMachineForm
         private string _resultsFilePath = @"";
         private string _trainingFilePath = @"";
         private string _testFilePath = @"";
-        private int _noOfFeatures;
-        private int _noOfRuns;
+        private int _noOfFeatures = 4;
+        private int _noOfRuns = 100;
         private double _startSensitivity = 0.1;
         private double _maxSensitivity = 10.0;
         private double _sensitivityIncrement = 0.1;
@@ -28,7 +29,7 @@ namespace BayesPointMachineForm
         private int _totalRuns, _runsLeft;
         private bool _addBias = false;
         private bool _trainingSelected, _testingSelected, _resultsSelected;
-        private static StreamWriter writer;
+        private static StreamWriter _writer;
         private static bool onlyWriteAggregateResults;
         private static bool writeGaussians;
         private BPMDataModel trainingModel, testModel;
@@ -39,7 +40,13 @@ namespace BayesPointMachineForm
             InitializeComponent();
             SetHandlers();
             progressBar1.Minimum = 0;
-            this.Text = "Differential Privacy Analyser";
+            Text = @"Differential Privacy Analyser";
+        }
+
+        public override sealed string Text
+        {
+            get { return base.Text; }
+            set { base.Text = value; }
         }
 
         private void SetHandlers()
@@ -71,7 +78,7 @@ namespace BayesPointMachineForm
             string actualWeights = posteriorWeights[1].ToString();
             int breakLocation = actualWeights.IndexOf("\r");
             actualWeights = actualWeights.Substring(0, breakLocation);
-            if(!onlyWriteAggregateResults&&writeGaussians)writer.WriteLine("Weights= " + actualWeights);
+            if(!onlyWriteAggregateResults&&writeGaussians)_writer.WriteLine("Weights= " + actualWeights);
             Discrete[] predictions = bpm.Test(testSet);
             int i = 0;
 
@@ -170,7 +177,7 @@ namespace BayesPointMachineForm
             catch (FormatException)
             {
                 ShowDialog("Error in number format", "Error", false);
-                textBox4.Text = _sensitivityIncrement.ToString();
+                textBox4.Text = _sensitivityIncrement.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -237,7 +244,7 @@ namespace BayesPointMachineForm
 
         private void RunTests()
         {
-            writer = new StreamWriter(_resultsFilePath);
+            _writer = new StreamWriter(_resultsFilePath);
 
             BPMDataModel noisyModel = FileUtils.CreateNoisyModel(trainingModel, _noisePrecision);
             Vector[] testVectors = testModel.GetInputs();
@@ -246,12 +253,12 @@ namespace BayesPointMachineForm
             List<double> vals = new List<double>(_noOfRuns);
             double accForGroup, stdevForGroup;
             //Always write the result without any noise to begin
-            BPMDataModel temp = trainingModel;
-            temp.ScaleFeatures();
-            testModel.SetInputLimits(temp.GetInputLimits());
-            testModel.ScaleFeatures();
-            accuracy = RunBPMGeneral(temp, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
-            writer.WriteLine(0.0 + "," + accuracy);
+            //BPMDataModel temp = trainingModel;
+            //temp.ScaleFeatures();
+            //testModel.SetInputLimits(temp.GetInputLimits());
+            //testModel.ScaleFeatures();
+            accuracy = RunBPMGeneral(trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
+            _writer.WriteLine(0.0 + "," + accuracy);
             //Now loop through noisy models
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
@@ -260,11 +267,11 @@ namespace BayesPointMachineForm
                     noisyModel = FileUtils.CreateNoisyModel(trainingModel, i);
                     //Set the test model data to have the same range plus max and min
                     //values as the noisy model, to normalise both data models to the same range
-                    testModel.SetInputLimits(noisyModel.GetInputLimits());
-                    testModel.ScaleFeatures();
+                    //testModel.SetInputLimits(noisyModel.GetInputLimits());
+                    //testModel.ScaleFeatures();
                     accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _noOfFeatures, testModel.GetClasses());
                     _runsLeft--;
-                    if(!onlyWriteAggregateResults) writer.WriteLine(i + "," + accuracy);
+                    if(!onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
                     else vals.Add(accuracy);
                 }
                 //If onlyWriteAggregateResults it calculates the mean and standard dev
@@ -274,11 +281,11 @@ namespace BayesPointMachineForm
                     accForGroup = FileUtils.Mean(vals);
                     stdevForGroup = FileUtils.StandardDeviation(vals);
                     vals.Clear();
-                    writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
+                    _writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
                 }
             }
-            writer.Flush();
-            writer.Close();
+            _writer.Flush();
+            _writer.Close();
             _performingCalcs = false;
         }
 

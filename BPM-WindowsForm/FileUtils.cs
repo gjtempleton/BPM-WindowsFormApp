@@ -126,8 +126,8 @@ namespace BayesPointMachineForm
             }
             noisyModel.SetAllVectorFeatures(x.ToArray());
             noisyModel.SetClasses(model.GetClasses());
-            noisyModel.CalculateFeatureLimits();
-            noisyModel.ScaleFeatures();
+            //noisyModel.CalculateFeatureLimits();
+            //noisyModel.ScaleFeatures();
             return noisyModel;
         }
 
