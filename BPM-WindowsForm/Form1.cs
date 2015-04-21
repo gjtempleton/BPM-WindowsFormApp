@@ -211,7 +211,7 @@ namespace BayesPointMachineForm
                 _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                 Thread calcThread = new Thread(RunTests);
                 calcThread.Name = "CalcThread";
-                calcThread.Priority = ThreadPriority.BelowNormal;
+                calcThread.Priority = ThreadPriority.Lowest;
                 _totalRuns = (int) (_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
                 progressBar1.Maximum = _totalRuns;
                 _performingCalcs = true;
@@ -270,6 +270,9 @@ namespace BayesPointMachineForm
             //Now loop through noisy models
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
+                //Round i to nearest (_sensitivityIncrement) to allow for floating point error
+                double roundingVal = 1/_sensitivityIncrement;
+                i = (Math.Floor((i*roundingVal)+(roundingVal/2))/_sensitivityIncrement);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
                     noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
