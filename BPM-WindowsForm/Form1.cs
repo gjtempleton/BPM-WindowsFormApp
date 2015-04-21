@@ -287,8 +287,7 @@ namespace BayesPointMachineForm
                 for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
                 {
                     //Round i to nearest (_sensitivityIncrement) to allow for floating point error
-                    double roundingVal = 1/_sensitivityIncrement;
-                    i = (Math.Floor((i*roundingVal) + (roundingVal/2))/_sensitivityIncrement);
+                    i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
                     for (int j = 0; j < _noOfRuns; j++)
                     {
                         noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
