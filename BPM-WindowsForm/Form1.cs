@@ -14,7 +14,7 @@ namespace BayesPointMachineForm
     public partial class Form1 : Form
     {
         #region variables
-        bool _performingCalcs;
+        private bool _performingCalcs, _memoryException;
         private string _resultsFilePath = @"";
         private string _trainingFilePath = @"";
         private string _testFilePath = @"";
@@ -32,6 +32,7 @@ namespace BayesPointMachineForm
         private static StreamWriter _writer;
         private static bool _onlyWriteAggregateResults, _writeGaussians;
         private BPMDataModel _trainingModel, _testModel;
+        private bool appendToFile;
         #endregion
 
         public Form1()
@@ -209,6 +210,7 @@ namespace BayesPointMachineForm
             {
                 _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                 _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                _writer = new StreamWriter(_resultsFilePath, appendToFile);
                 Thread calcThread = new Thread(RunTests);
                 calcThread.Name = "CalcThread";
                 calcThread.Priority = ThreadPriority.Lowest;
@@ -239,6 +241,19 @@ namespace BayesPointMachineForm
                                          timeEstimate);
                     }
                 }
+                if (_memoryException)
+                {
+                    calcThread.Abort();
+                    //If only writing aggregate results all lines will have been written, so no need for file cleanup
+                    if (!_onlyWriteAggregateResults)
+                    {
+                        double[] results = FileUtils.CleanupFile(_resultsFilePath, _noOfRuns);
+                        if (results[1] == _noOfRuns) _startSensitivity = (results[0] + _sensitivityIncrement);
+                        else _startSensitivity = results[1];
+                    }
+                    appendToFile = true;
+                    beginButton.PerformClick();
+                }
                 trainingFileSelect.Enabled = true;
                 testFileSelect.Enabled = true;
                 resultsFileSelect.Enabled = true;
@@ -252,52 +267,62 @@ namespace BayesPointMachineForm
 
         private void RunTests()
         {
-            _writer = new StreamWriter(_resultsFilePath);
-
-            BPMDataModel noisyModel;// = FileUtils.CreateNoisyModel(_trainingModel, _noisePrecision);
-            Vector[] testVectors = _testModel.GetInputs();
-            _runsLeft = _totalRuns;
-            double accuracy;
-            List<double> vals = new List<double>(_noOfRuns);
-            double accForGroup, stdevForGroup;
-            //Always write the result without any noise to begin
-            //BPMDataModel temp = trainingModel;
-            //temp.ScaleFeatures();
-            //testModel.SetInputLimits(temp.GetInputLimits());
-            //testModel.ScaleFeatures();
-            accuracy = RunBPMGeneral(_trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _testModel.GetClasses());
-            _writer.WriteLine(0.0 + "," + accuracy);
-            //Now loop through noisy models
-            for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
+            try
             {
-                //Round i to nearest (_sensitivityIncrement) to allow for floating point error
-                double roundingVal = 1/_sensitivityIncrement;
-                i = (Math.Floor((i*roundingVal)+(roundingVal/2))/_sensitivityIncrement);
-                for (int j = 0; j < _noOfRuns; j++)
+                BPMDataModel noisyModel; // = FileUtils.CreateNoisyModel(_trainingModel, _noisePrecision);
+                Vector[] testVectors = _testModel.GetInputs();
+                _runsLeft = _totalRuns;
+                double accuracy;
+                List<double> vals = new List<double>(_noOfRuns);
+                double accForGroup, stdevForGroup;
+                //Always write the result without any noise to begin
+                //BPMDataModel temp = trainingModel;
+                //temp.ScaleFeatures();
+                //testModel.SetInputLimits(temp.GetInputLimits());
+                //testModel.ScaleFeatures();
+                accuracy = RunBPMGeneral(_trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
+                    _testModel.GetClasses());
+                _writer.WriteLine(0.0 + "," + accuracy);
+                //Now loop through noisy models
+                for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
                 {
-                    noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
-                    //Set the test model data to have the same range plus max and min
-                    //values as the noisy model, to normalise both data models to the same range
-                    //testModel.SetInputLimits(noisyModel.GetInputLimits());
-                    //testModel.ScaleFeatures();
-                    accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors, _testModel.GetClasses());
-                    _runsLeft--;
-                    if(!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
-                    else vals.Add(accuracy);
+                    //Round i to nearest (_sensitivityIncrement) to allow for floating point error
+                    double roundingVal = 1/_sensitivityIncrement;
+                    i = (Math.Floor((i*roundingVal) + (roundingVal/2))/_sensitivityIncrement);
+                    for (int j = 0; j < _noOfRuns; j++)
+                    {
+                        noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
+                        //Set the test model data to have the same range plus max and min
+                        //values as the noisy model, to normalise both data models to the same range
+                        //testModel.SetInputLimits(noisyModel.GetInputLimits());
+                        //testModel.ScaleFeatures();
+                        accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
+                            _testModel.GetClasses());
+                        _runsLeft--;
+                        if (!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
+                        else vals.Add(accuracy);
+                    }
+                    //If onlyWriteAggregateResults it calculates the mean and standard dev
+                    //for the results for each value of sigma
+                    if (_onlyWriteAggregateResults)
+                    {
+                        accForGroup = FileUtils.Mean(vals);
+                        stdevForGroup = FileUtils.StandardDeviation(vals);
+                        vals.Clear();
+                        _writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
+                    }
+                    _writer.Flush();
                 }
-                //If onlyWriteAggregateResults it calculates the mean and standard dev
-                //for the results for each value of sigma
-                if (_onlyWriteAggregateResults)
-                {
-                    accForGroup = FileUtils.Mean(vals);
-                    stdevForGroup = FileUtils.StandardDeviation(vals);
-                    vals.Clear();
-                    _writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
-                }
+                _writer.Flush();
+                _writer.Close();
+                _performingCalcs = false;
             }
-            _writer.Flush();
-            _writer.Close();
-            _performingCalcs = false;
+            catch (OutOfMemoryException excep)
+            {
+                _writer.Close();
+                _performingCalcs = false;
+                _memoryException = true;
+            }
         }
 
         private static int FindMaxValPosition(double[] values)

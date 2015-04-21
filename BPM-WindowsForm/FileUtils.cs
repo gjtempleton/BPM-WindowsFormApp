@@ -5,7 +5,7 @@ using MicrosoftResearch.Infer.Maths;
 
 namespace BayesPointMachineForm
 {
-    class FileUtils
+    internal class FileUtils
     {
         public static BPMDataModel ReadFile(string filename, bool labelAtStart, int noOfFeatures, bool addBias)
         {
@@ -120,12 +120,13 @@ namespace BayesPointMachineForm
             return noisyModel;
         }
 
-        public static double CreateLaplacian(double epsilon, double mu, double initialValue, double range, double randomValue)
+        public static double CreateLaplacian(double epsilon, double mu, double initialValue, double range,
+            double randomValue)
         {
             double newValue;
-            double b = range / epsilon;
+            double b = range/epsilon;
             int sign = Math.Sign((randomValue));
-            double laplNoise = (mu - b * (sign * (Math.Log(1 - 2 * (Math.Abs(randomValue))))));
+            double laplNoise = (mu - b*(sign*(Math.Log(1 - 2*(Math.Abs(randomValue))))));
             newValue = initialValue + laplNoise;
             return newValue;
         }
@@ -139,12 +140,12 @@ namespace BayesPointMachineForm
             foreach (double value in valueList)
             {
                 double tmpM = m;
-                m += (value - tmpM) / k;
-                s += (value - tmpM) * (value - m);
+                m += (value - tmpM)/k;
+                s += (value - tmpM)*(value - m);
                 k++;
             }
             //Use k-1 as have whole population, not just sample
-            return Math.Sqrt(s / (k - 1));
+            return Math.Sqrt(s/(k - 1));
         }
 
         public static double Mean(List<double> valueList)
@@ -154,7 +155,61 @@ namespace BayesPointMachineForm
             {
                 sum += value;
             }
-            return sum / valueList.Count;
+            return sum/valueList.Count;
+        }
+
+        internal static double[] CleanupFile(string filePath, int noOfRuns)
+        {
+            double[] results;
+            //StringReader reader = new StringReader(filePath);
+            string tempFilePath = filePath + ".tmp";
+            StreamWriter writeTemp = new StreamWriter(tempFilePath);
+            string line;
+            double final = Double.NaN;
+            int count = 1;
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                while (!reader.EndOfStream)
+                {
+                    line = reader.ReadLine();
+                    //Allow for splitting of data in file by either tab, space or comma
+                    if (line != null)
+                    {
+                        writeTemp.WriteLine(line);
+                        string[] pieces = line.Split(',');
+                        if (final == Double.Parse(pieces[0]))
+                        {
+                            count++;
+                        }
+                        else
+                        {
+                            final = Double.Parse(pieces[0]);
+                            count = 1;
+                        }
+                        
+                    }
+                }
+            }
+            StreamWriter writer = new StreamWriter(filePath);
+            using (StreamReader reader = new StreamReader(tempFilePath))
+            {
+                while (!reader.EndOfStream)
+                {
+                    line = reader.ReadLine();
+                    if (line != null)
+                    {
+                        string[] pieces = line.Split(',');
+                        //If the number of results for the last epsilon value
+                        //Is < the noOfRuns then discard them all, otherwise write to the file
+                        if (!(count != noOfRuns && final==Double.Parse(pieces[0])))
+                        {
+                            writer.WriteLine(line);
+                        }
+                    }
+                }
+            }
+            results = new double[2] {final, count};
+            return results;
         }
     }
 }
