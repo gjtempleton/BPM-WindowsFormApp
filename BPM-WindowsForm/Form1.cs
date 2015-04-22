@@ -249,10 +249,12 @@ namespace BayesPointMachineForm
                     {
                         double[] results = FileUtils.CleanupFile(_resultsFilePath, _noOfRuns);
                         if (results[1] == _noOfRuns) _startSensitivity = (results[0] + _sensitivityIncrement);
-                        else _startSensitivity = results[1];
+                        else _startSensitivity = results[0];
                     }
                     appendToFile = true;
-                    beginButton.PerformClick();
+                    _memoryException = false;
+                    begin_Click(sender, e);
+                    return;
                 }
                 trainingFileSelect.Enabled = true;
                 testFileSelect.Enabled = true;
@@ -340,8 +342,8 @@ namespace BayesPointMachineForm
         public void ShowDialog(string text, string title, bool fileError)
         {
             Form messageForm = new Form();
-            messageForm.Width = 300;
-            messageForm.Height = 100;
+            messageForm.Width = 1300;
+            messageForm.Height = 500;
             messageForm.Text = title;
             //Create a text label for it to pass the user the message
             Label textLabel = new Label() { Left = 50, Top = 20, Text = text };

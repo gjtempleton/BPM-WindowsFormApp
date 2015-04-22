@@ -186,10 +186,12 @@ namespace BayesPointMachineForm
                             final = Double.Parse(pieces[0]);
                             count = 1;
                         }
-                        
+
                     }
                 }
             }
+            writeTemp.Flush();
+            writeTemp.Close();
             StreamWriter writer = new StreamWriter(filePath);
             using (StreamReader reader = new StreamReader(tempFilePath))
             {
@@ -201,14 +203,16 @@ namespace BayesPointMachineForm
                         string[] pieces = line.Split(',');
                         //If the number of results for the last epsilon value
                         //Is < the noOfRuns then discard them all, otherwise write to the file
-                        if (!(count != noOfRuns && final==Double.Parse(pieces[0])))
+                        if (!(count != noOfRuns && final == Double.Parse(pieces[0])))
                         {
                             writer.WriteLine(line);
                         }
                     }
                 }
             }
-            results = new double[2] {final, count};
+            writer.Flush();
+            writer.Close();
+            results = new double[2] { final, count };
             return results;
         }
     }
