@@ -33,6 +33,12 @@ namespace BayesPointMachineForm
         private static bool _onlyWriteAggregateResults, _writeGaussians;
         private BPMDataModel _trainingModel, _testModel;
         private bool appendToFile;
+        private static BPM bpm;
+        int prevRem;
+        int performedInInterval;
+        DateTime last = DateTime.Now;
+        DateTime now;
+        TimeSpan diff;
         #endregion
 
         public Form1()
@@ -75,7 +81,6 @@ namespace BayesPointMachineForm
         private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int[] testResults)
         {
             int correctCount = 0;
-            BPM bpm = new BPM(numClasses, noisePrecision);
             VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.GetClasses());
             string actualWeights = posteriorWeights[1].ToString();
             int breakLocation = actualWeights.IndexOf("\r", StringComparison.Ordinal);
@@ -202,6 +207,8 @@ namespace BayesPointMachineForm
 
         private void begin_Click(object sender, EventArgs e)
         {
+
+            bpm = new BPM(_numOfClasses, _noisePrecision);
             beginButton.Enabled = false;
             trainingFileSelect.Enabled = false;
             testFileSelect.Enabled = false;

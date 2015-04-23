@@ -60,15 +60,12 @@ namespace BayesPointMachine
 		/// <returns>A posterior distribution over weights</returns>
 		public VectorGaussian[] Train(Vector[] featureVectors, int[] labels)
 		{
-		    // Initialize weight priors if necessary.
-		    if (!this.trainModel.wPrior.IsObserved)
-		    {
+		    // Initialize weight priors
 		        int numFeatures = featureVectors[0].Count;
 		        int numClasses = this.trainModel.numClasses.ObservedValue;
 		        this.trainModel.wPrior.ObservedValue = InitializePrior(numClasses, numFeatures);
                 //New code - Added by Guy Templeton
                 this.numOfFeatures = numFeatures;
-		    }
             // Observe features and labels.
 		    this.trainModel.numItems.ObservedValue = featureVectors.Length;
 		    this.trainModel.x.ObservedValue = featureVectors;
