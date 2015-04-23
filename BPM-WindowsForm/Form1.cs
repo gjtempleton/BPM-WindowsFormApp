@@ -3,6 +3,7 @@ using MicrosoftResearch.Infer.Distributions;
 using MicrosoftResearch.Infer.Maths;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -85,7 +86,7 @@ namespace BayesPointMachineForm
             string actualWeights = posteriorWeights[1].ToString();
             int breakLocation = actualWeights.IndexOf("\r", StringComparison.Ordinal);
             actualWeights = actualWeights.Substring(0, breakLocation);
-            if(!_onlyWriteAggregateResults&&_writeGaussians)_writer.WriteLine("Weights= " + actualWeights);
+            if (!_onlyWriteAggregateResults && _writeGaussians) _writer.WriteLine("Weights= " + actualWeights);
             Discrete[] predictions = bpm.Test(testSet);
             int i = 0;
 
@@ -95,7 +96,7 @@ namespace BayesPointMachineForm
                 i++;
             }
             double accuracy = ((double)correctCount / predictions.Length) * 100;
-            double logEvidence = bpm.GetLogEvidence();
+            //double logEvidence = bpm.GetLogEvidence();
             return accuracy;
         }
 
@@ -113,7 +114,7 @@ namespace BayesPointMachineForm
 
         private void testFileSelect_Click(object sender, EventArgs e)
         {
-            if(openFileDialog2.ShowDialog() == DialogResult.OK)
+            if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
                 _testFilePath = openFileDialog2.FileName;
                 _testingSelected = true;
@@ -143,7 +144,7 @@ namespace BayesPointMachineForm
             _noOfFeatures = (int)numericUpDown1.Value;
         }
 
-        private void noOfRuns_Changed(object sender, EventArgs e)   
+        private void noOfRuns_Changed(object sender, EventArgs e)
         {
             _noOfRuns = (int)numericUpDown2.Value;
         }
@@ -190,7 +191,7 @@ namespace BayesPointMachineForm
 
         private void noOfClasses_Changed(object sender, EventArgs e)
         {
-            _numOfClasses = (int) numericUpDown3.Value;
+            _numOfClasses = (int)numericUpDown3.Value;
         }
 
         private void aggregateResults_Changed(object sender, EventArgs e)
@@ -207,71 +208,121 @@ namespace BayesPointMachineForm
 
         private void begin_Click(object sender, EventArgs e)
         {
-
-            bpm = new BPM(_numOfClasses, _noisePrecision);
             beginButton.Enabled = false;
             trainingFileSelect.Enabled = false;
             testFileSelect.Enabled = false;
             resultsFileSelect.Enabled = false;
+            bpm = new BPM(_numOfClasses, _noisePrecision);
             try
             {
                 _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                 _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                 _writer = new StreamWriter(_resultsFilePath, appendToFile);
-                Thread calcThread = new Thread(RunTests);
-                calcThread.Name = "CalcThread";
-                calcThread.Priority = ThreadPriority.Lowest;
-                _totalRuns = (int) (_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
+                _totalRuns = (int)(_noOfRuns * (1 + ((_maxSensitivity - _startSensitivity) / _sensitivityIncrement)));
+                BackgroundWorker bw = new BackgroundWorker();
+                bw.WorkerReportsProgress = true;
+                bw.DoWork += new DoWorkEventHandler(bw_DoWork);
+                bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
+                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
+                bw.RunWorkerAsync();
+                //Thread calcThread = new Thread(RunTests);
+                //calcThread.Name = "CalcThread";
+                //calcThread.Priority = ThreadPriority.Lowest;
+
                 progressBar1.Maximum = _totalRuns;
-                _performingCalcs = true;
-                calcThread.Start();
-                int prevRem = _totalRuns;
-                int performedInInterval;
-                DateTime last = DateTime.Now;
-                DateTime now;
-                TimeSpan diff;
-                while (_performingCalcs)
-                {
-                    Thread.Sleep(100);
-                    progressBar1.Value = (_totalRuns - _runsLeft);
-                    if ((progressBar1.Value)%10 == 0)
-                    {
-                        performedInInterval = prevRem - _runsLeft;
-                        //In case of dividing by zero
-                        if (performedInInterval == 0) performedInInterval = 1;
-                        prevRem = _runsLeft;
-                        now = DateTime.Now;
-                        diff = now - last;
-                        TimeSpan remainder = new TimeSpan((diff.Ticks/performedInInterval)*_runsLeft);
-                        String timeEstimate = remainder.ToString();
-                        textBox1.Text = (_runsLeft + @" runs left of " + _totalRuns + @". Should take roughly " +
-                                         timeEstimate);
-                    }
-                }
-                if (_memoryException)
-                {
-                    calcThread.Abort();
-                    //If only writing aggregate results all lines will have been written, so no need for file cleanup
-                    if (!_onlyWriteAggregateResults)
-                    {
-                        double[] results = FileUtils.CleanupFile(_resultsFilePath, _noOfRuns);
-                        if (results[1] == _noOfRuns) _startSensitivity = (results[0] + _sensitivityIncrement);
-                        else _startSensitivity = results[0];
-                    }
-                    appendToFile = true;
-                    _memoryException = false;
-                    begin_Click(sender, e);
-                    return;
-                }
-                trainingFileSelect.Enabled = true;
-                testFileSelect.Enabled = true;
-                resultsFileSelect.Enabled = true;
+                //_performingCalcs = true;
+                //calcThread.Start();
+                prevRem = _totalRuns;
+
             }
             catch (Exception exception)
             {
                 ShowDialog("Sorry, there was an error reading the input data" + exception.GetType(), "Error", true);
             }
-            
+
+        }
+
+        private void bw_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            BPMDataModel noisyModel; // = FileUtils.CreateNoisyModel(_trainingModel, _noisePrecision);
+            Vector[] testVectors = _testModel.GetInputs();
+            _runsLeft = _totalRuns;
+            double accuracy;
+            List<double> vals = new List<double>(_noOfRuns);
+            double accForGroup, stdevForGroup;
+            //Always write the result without any noise to begin
+            //BPMDataModel temp = trainingModel;
+            //temp.ScaleFeatures();
+            //testModel.SetInputLimits(temp.GetInputLimits());
+            //testModel.ScaleFeatures();
+            accuracy = RunBPMGeneral(_trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
+                _testModel.GetClasses());
+            _writer.WriteLine(0.0 + "," + accuracy);
+            //Now loop through noisy models
+            for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
+            {
+                //Round i to nearest (_sensitivityIncrement) to allow for floating point error
+                //double roundingVal = 1/_sensitivityIncrement;
+                i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
+                //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
+                for (int j = 0; j < _noOfRuns; j++)
+                {
+                    System.Threading.Thread.CurrentThread.Join(10);
+                    noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
+                    //Set the test model data to have the same range plus max and min
+                    //values as the noisy model, to normalise both data models to the same range
+                    //testModel.SetInputLimits(noisyModel.GetInputLimits());
+                    //testModel.ScaleFeatures();
+                    accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
+                        _testModel.GetClasses());
+                    _runsLeft--;
+                    worker.ReportProgress(_runsLeft);
+                    //if (_runsLeft == 9970) ShowDialog("Sorry, there was an error reading the input data", "Error", true);
+                    if (!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
+                    else vals.Add(accuracy);
+                }
+                //If onlyWriteAggregateResults it calculates the mean and standard dev
+                //for the results for each value of sigma
+                if (_onlyWriteAggregateResults)
+                {
+                    accForGroup = FileUtils.Mean(vals);
+                    stdevForGroup = FileUtils.StandardDeviation(vals);
+                    vals.Clear();
+                    _writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
+                }
+                _writer.Flush();
+            }
+            _writer.Flush();
+            _writer.Close();
+            _performingCalcs = false;
+        }
+
+        private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progressBar1.Value = (_totalRuns - e.ProgressPercentage);
+            if ((progressBar1.Value) % 10 == 0)
+            {
+                performedInInterval = prevRem - _runsLeft;
+                //In case of dividing by zero
+                if (performedInInterval == 0) performedInInterval = 1;
+                prevRem = _runsLeft;
+                now = DateTime.Now;
+                diff = now - last;
+                last = now;
+                TimeSpan remainder = new TimeSpan((diff.Ticks / performedInInterval) * _runsLeft);
+                String timeEstimate = remainder.ToString();
+                textBox1.Text = (_runsLeft + @" runs left of " + _totalRuns + @". Should take roughly " +
+                                 timeEstimate);
+            }
+        }
+
+        private void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            textBox1.Text = "Done!";
+            trainingFileSelect.Enabled = true;
+            testFileSelect.Enabled = true;
+            resultsFileSelect.Enabled = true;
         }
 
         private void RunTests()
@@ -296,9 +347,12 @@ namespace BayesPointMachineForm
                 for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
                 {
                     //Round i to nearest (_sensitivityIncrement) to allow for floating point error
+                    //double roundingVal = 1/_sensitivityIncrement;
                     i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
+                    //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
                     for (int j = 0; j < _noOfRuns; j++)
                     {
+                        System.Threading.Thread.CurrentThread.Join(10);
                         noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
                         //Set the test model data to have the same range plus max and min
                         //values as the noisy model, to normalise both data models to the same range
@@ -307,6 +361,7 @@ namespace BayesPointMachineForm
                         accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
                             _testModel.GetClasses());
                         _runsLeft--;
+                        //if (_runsLeft == 9970) ShowDialog("Sorry, there was an error reading the input data", "Error", true);
                         if (!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
                         else vals.Add(accuracy);
                     }
@@ -327,6 +382,7 @@ namespace BayesPointMachineForm
             }
             catch (OutOfMemoryException excep)
             {
+                _writer.Flush();
                 _writer.Close();
                 _performingCalcs = false;
                 _memoryException = true;
@@ -336,7 +392,7 @@ namespace BayesPointMachineForm
         private static int FindMaxValPosition(double[] values)
         {
             double maxValue = values.Max();
-            int i =0;
+            int i = 0;
             foreach (double val in values)
             {
                 if (Math.Abs(val - maxValue) < 0.1)
@@ -353,7 +409,7 @@ namespace BayesPointMachineForm
             messageForm.Height = 500;
             messageForm.Text = title;
             //Create a text label for it to pass the user the message
-            Label textLabel = new Label() { Left = 50, Top = 20, Text = text };
+            Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Width = 1200, Height = 460 };
             Button dismissButton = new Button() { Text = @"Ok", Left = 350, Width = 100, Top = 70 };
             dismissButton.Click += (sender, e) => { messageForm.Close(); };
             //If caused by an error force the user to reselect the two files
