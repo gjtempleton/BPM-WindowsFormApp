@@ -228,13 +228,8 @@ namespace BayesPointMachineForm
                     bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
                     bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
                     bw.RunWorkerAsync();
-                    //Thread calcThread = new Thread(RunTests);
-                    //calcThread.Name = "CalcThread";
-                    //calcThread.Priority = ThreadPriority.Lowest;
-
                     progressBar1.Maximum = _totalRuns;
                     _performingCalcs = true;
-                    //calcThread.Start();
                     prevRem = _totalRuns;
 
                 }
@@ -349,70 +344,6 @@ namespace BayesPointMachineForm
             }
             ChangeStatusOfInputs(true);
             
-        }
-
-        private void RunTests()
-        {
-            try
-            {
-                BPMDataModel noisyModel; // = FileUtils.CreateNoisyModel(_trainingModel, _noisePrecision);
-                Vector[] testVectors = _testModel.GetInputs();
-                _runsLeft = _totalRuns;
-                double accuracy;
-                List<double> vals = new List<double>(_noOfRuns);
-                double accForGroup, stdevForGroup;
-                //Always write the result without any noise to begin
-                //BPMDataModel temp = trainingModel;
-                //temp.ScaleFeatures();
-                //testModel.SetInputLimits(temp.GetInputLimits());
-                //testModel.ScaleFeatures();
-                accuracy = RunBPMGeneral(_trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
-                    _testModel.GetClasses());
-                _writer.WriteLine(0.0 + "," + accuracy);
-                //Now loop through noisy models
-                for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
-                {
-                    //Round i to nearest (_sensitivityIncrement) to allow for floating point error
-                    //double roundingVal = 1/_sensitivityIncrement;
-                    i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
-                    //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
-                    for (int j = 0; j < _noOfRuns; j++)
-                    {
-                        System.Threading.Thread.CurrentThread.Join(10);
-                        noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
-                        //Set the test model data to have the same range plus max and min
-                        //values as the noisy model, to normalise both data models to the same range
-                        //testModel.SetInputLimits(noisyModel.GetInputLimits());
-                        //testModel.ScaleFeatures();
-                        accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
-                            _testModel.GetClasses());
-                        _runsLeft--;
-                        //if (_runsLeft == 9970) ShowDialog("Sorry, there was an error reading the input data", "Error", true);
-                        if (!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
-                        else vals.Add(accuracy);
-                    }
-                    //If onlyWriteAggregateResults it calculates the mean and standard dev
-                    //for the results for each value of sigma
-                    if (_onlyWriteAggregateResults)
-                    {
-                        accForGroup = FileUtils.Mean(vals);
-                        stdevForGroup = FileUtils.StandardDeviation(vals);
-                        vals.Clear();
-                        _writer.WriteLine(i + "," + accForGroup + "," + stdevForGroup);
-                    }
-                    _writer.Flush();
-                }
-                _writer.Flush();
-                _writer.Close();
-                _performingCalcs = false;
-            }
-            catch (OutOfMemoryException excep)
-            {
-                _writer.Flush();
-                _writer.Close();
-                _performingCalcs = false;
-                _memoryException = true;
-            }
         }
 
         private static int FindMaxValPosition(double[] values)
