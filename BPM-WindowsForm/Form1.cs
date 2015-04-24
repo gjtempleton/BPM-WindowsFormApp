@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace BayesPointMachineForm
@@ -15,7 +14,7 @@ namespace BayesPointMachineForm
     public partial class Form1 : Form
     {
         #region variables
-        private bool _performingCalcs, _memoryException;
+        private bool _performingCalcs;
         private string _resultsFilePath = @"";
         private string _trainingFilePath = @"";
         private string _testFilePath = @"";
@@ -33,15 +32,15 @@ namespace BayesPointMachineForm
         private static StreamWriter _writer;
         private static bool _onlyWriteAggregateResults, _writeGaussians;
         private BPMDataModel _trainingModel, _testModel;
-        private bool appendToFile;
-        private static BPM bpm;
-        private double epsilon;
+        private bool _appendToFile;
+        private static BPM _bpm;
+        private double _epsilon;
         private BackgroundWorker bw = new BackgroundWorker();
-        int prevRem;
-        int performedInInterval;
-        DateTime last = DateTime.Now;
-        DateTime now;
-        TimeSpan diff;
+        private int _prevRem;
+        private int _performedInInterval;
+        private DateTime _last = DateTime.Now;
+        private DateTime _now;
+        private TimeSpan _diff;
         #endregion
 
         public Form1()
@@ -81,15 +80,15 @@ namespace BayesPointMachineForm
             checkBox3.Click += (writeGaussians_Changed);
         }
 
-        private static double RunBPMGeneral(BPMDataModel model, int numClasses, double noisePrecision, bool addBias, Vector[] testSet, int[] testResults)
+        private static double RunBPMGeneral(BPMDataModel model, bool addBias, Vector[] testSet, int[] testResults)
         {
             int correctCount = 0;
-            VectorGaussian[] posteriorWeights = bpm.Train(model.GetInputs(), model.GetClasses());
+            VectorGaussian[] posteriorWeights = _bpm.Train(model.GetInputs(), model.GetClasses());
             string actualWeights = posteriorWeights[1].ToString();
             int breakLocation = actualWeights.IndexOf("\r", StringComparison.Ordinal);
             actualWeights = actualWeights.Substring(0, breakLocation);
             if (!_onlyWriteAggregateResults && _writeGaussians) _writer.WriteLine("Weights= " + actualWeights);
-            Discrete[] predictions = bpm.Test(testSet);
+            Discrete[] predictions = _bpm.Test(testSet);
             int i = 0;
 
             foreach (Discrete prediction in predictions)
@@ -215,22 +214,22 @@ namespace BayesPointMachineForm
                 //Disable input changes
                 ChangeStatusOfInputs(false);
                 beginButton.Text = @"Cancel";
-                bpm = new BPM(_numOfClasses, _noisePrecision);
+                _bpm = new BPM(_numOfClasses, _noisePrecision);
                 try
                 {
                     _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                     _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
-                    _writer = new StreamWriter(_resultsFilePath, appendToFile);
+                    _writer = new StreamWriter(_resultsFilePath, _appendToFile);
                     _totalRuns = (int) (_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
                     bw.WorkerReportsProgress = true;
                     bw.WorkerSupportsCancellation = true;
-                    bw.DoWork += new DoWorkEventHandler(bw_DoWork);
-                    bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
-                    bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
+                    bw.DoWork += bw_DoWork;
+                    bw.ProgressChanged += bw_ProgressChanged;
+                    bw.RunWorkerCompleted += bw_RunWorkerCompleted;
                     bw.RunWorkerAsync();
                     progressBar1.Maximum = _totalRuns;
                     _performingCalcs = true;
-                    prevRem = _totalRuns;
+                    _prevRem = _totalRuns;
 
                 }
                 catch (Exception exception)
@@ -262,7 +261,7 @@ namespace BayesPointMachineForm
             //temp.ScaleFeatures();
             //testModel.SetInputLimits(temp.GetInputLimits());
             //testModel.ScaleFeatures();
-            accuracy = RunBPMGeneral(_trainingModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
+            accuracy = RunBPMGeneral(_trainingModel, _addBias, testVectors,
                 _testModel.GetClasses());
             _writer.WriteLine(0.0 + "," + accuracy);
             //Now loop through noisy models
@@ -271,7 +270,7 @@ namespace BayesPointMachineForm
                 //Round i to nearest (_sensitivityIncrement) to allow for floating point error
                 //double roundingVal = 1/_sensitivityIncrement;
                 i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
-                epsilon = i;
+                _epsilon = i;
                 //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
@@ -282,13 +281,12 @@ namespace BayesPointMachineForm
                         i = _maxSensitivity + 1;
                         break;
                     }
-                    System.Threading.Thread.CurrentThread.Join(10);
                     noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
                     //Set the test model data to have the same range plus max and min
                     //values as the noisy model, to normalise both data models to the same range
                     //testModel.SetInputLimits(noisyModel.GetInputLimits());
                     //testModel.ScaleFeatures();
-                    accuracy = RunBPMGeneral(noisyModel, _numOfClasses, _noisePrecision, _addBias, testVectors,
+                    accuracy = RunBPMGeneral(noisyModel, _addBias, testVectors,
                         _testModel.GetClasses());
                     _runsLeft--;
                     worker.ReportProgress(_runsLeft);
@@ -315,17 +313,17 @@ namespace BayesPointMachineForm
         private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value = (_totalRuns - e.ProgressPercentage);
-            statusLabel.Text = string.Format("PErforming inference for epsilon = {0}...", epsilon);
+            statusLabel.Text = string.Format("PErforming inference for epsilon = {0}...", _epsilon);
             if ((progressBar1.Value) % 10 == 0)
             {
-                performedInInterval = prevRem - _runsLeft;
+                _performedInInterval = _prevRem - _runsLeft;
                 //In case of dividing by zero
-                if (performedInInterval == 0) performedInInterval = 1;
-                prevRem = _runsLeft;
-                now = DateTime.Now;
-                diff = now - last;
-                last = now;
-                TimeSpan remainder = new TimeSpan((diff.Ticks / performedInInterval) * _runsLeft);
+                if (_performedInInterval == 0) _performedInInterval = 1;
+                _prevRem = _runsLeft;
+                _now = DateTime.Now;
+                _diff = _now - _last;
+                _last = _now;
+                TimeSpan remainder = new TimeSpan((_diff.Ticks / _performedInInterval) * _runsLeft);
                 String timeEstimate = remainder.ToString();
                 textBox1.Text = (_runsLeft + @" runs left of " + _totalRuns + @". Should take roughly " +
                                  timeEstimate);
@@ -336,11 +334,11 @@ namespace BayesPointMachineForm
         {
             if(e.Cancelled)
             {
-                textBox1.Text = "Canceled!";
+                textBox1.Text = @"Canceled!";
             }
             else
             {
-                textBox1.Text = "Done!";
+                textBox1.Text = @"Done!";
             }
             ChangeStatusOfInputs(true);
             
