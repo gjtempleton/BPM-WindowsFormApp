@@ -36,6 +36,7 @@ namespace BayesPointMachineForm
         private bool appendToFile;
         private static BPM bpm;
         private double epsilon;
+        private BackgroundWorker bw = new BackgroundWorker();
         int prevRem;
         int performedInInterval;
         DateTime last = DateTime.Now;
@@ -209,36 +210,45 @@ namespace BayesPointMachineForm
 
         private void begin_Click(object sender, EventArgs e)
         {
-            beginButton.Enabled = false;
-            trainingFileSelect.Enabled = false;
-            testFileSelect.Enabled = false;
-            resultsFileSelect.Enabled = false;
-            bpm = new BPM(_numOfClasses, _noisePrecision);
-            try
+            if (_performingCalcs)
             {
-                _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
-                _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
-                _writer = new StreamWriter(_resultsFilePath, appendToFile);
-                _totalRuns = (int)(_noOfRuns * (1 + ((_maxSensitivity - _startSensitivity) / _sensitivityIncrement)));
-                BackgroundWorker bw = new BackgroundWorker();
-                bw.WorkerReportsProgress = true;
-                bw.DoWork += new DoWorkEventHandler(bw_DoWork);
-                bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
-                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
-                bw.RunWorkerAsync();
-                //Thread calcThread = new Thread(RunTests);
-                //calcThread.Name = "CalcThread";
-                //calcThread.Priority = ThreadPriority.Lowest;
+                //Disable input changes
+                ChangeStatusOfInputs(false);
+                beginButton.Text = @"Cancel";
+                bpm = new BPM(_numOfClasses, _noisePrecision);
+                try
+                {
+                    _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                    _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
+                    _writer = new StreamWriter(_resultsFilePath, appendToFile);
+                    _totalRuns = (int) (_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
+                    bw.WorkerReportsProgress = true;
+                    bw.WorkerSupportsCancellation = true;
+                    bw.DoWork += new DoWorkEventHandler(bw_DoWork);
+                    bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
+                    bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
+                    bw.RunWorkerAsync();
+                    //Thread calcThread = new Thread(RunTests);
+                    //calcThread.Name = "CalcThread";
+                    //calcThread.Priority = ThreadPriority.Lowest;
 
-                progressBar1.Maximum = _totalRuns;
-                //_performingCalcs = true;
-                //calcThread.Start();
-                prevRem = _totalRuns;
+                    progressBar1.Maximum = _totalRuns;
+                    _performingCalcs = true;
+                    //calcThread.Start();
+                    prevRem = _totalRuns;
 
+                }
+                catch (Exception exception)
+                {
+                    ShowDialog("Sorry, there was an error reading the input data" + exception.GetType(), "Error", true);
+                }
             }
-            catch (Exception exception)
+            else
             {
-                ShowDialog("Sorry, there was an error reading the input data" + exception.GetType(), "Error", true);
+                bw.CancelAsync();
+                beginButton.Text = @"Begin processing";
+                //Tidy up
+                statusLabel.Text = @"";
             }
 
         }
@@ -270,6 +280,13 @@ namespace BayesPointMachineForm
                 //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
+                    if ((worker.CancellationPending))
+                    {
+                        e.Cancel = true;
+                        //Break out of both loops
+                        i = _maxSensitivity + 1;
+                        break;
+                    }
                     System.Threading.Thread.CurrentThread.Join(10);
                     noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
                     //Set the test model data to have the same range plus max and min
@@ -322,10 +339,16 @@ namespace BayesPointMachineForm
 
         private void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            textBox1.Text = "Done!";
-            trainingFileSelect.Enabled = true;
-            testFileSelect.Enabled = true;
-            resultsFileSelect.Enabled = true;
+            if(e.Cancelled)
+            {
+                textBox1.Text = "Canceled!";
+            }
+            else
+            {
+                textBox1.Text = "Done!";
+            }
+            ChangeStatusOfInputs(true);
+            
         }
 
         private void RunTests()
@@ -423,6 +446,22 @@ namespace BayesPointMachineForm
             }
             messageForm.Controls.Add(textLabel);
             messageForm.ShowDialog();
+        }
+
+        private void ChangeStatusOfInputs(bool reEnable)
+        {
+            trainingFileSelect.Enabled = reEnable;
+            testFileSelect.Enabled = reEnable;
+            resultsFileSelect.Enabled = reEnable;
+            numericUpDown1.Enabled = reEnable;
+            numericUpDown2.Enabled = reEnable;
+            numericUpDown3.Enabled = reEnable;
+            textBox2.Enabled = reEnable;
+            textBox3.Enabled = reEnable;
+            textBox4.Enabled = reEnable;
+            checkBox1.Enabled = reEnable;
+            checkBox2.Enabled = reEnable;
+            checkBox3.Enabled = reEnable;
         }
 
 
