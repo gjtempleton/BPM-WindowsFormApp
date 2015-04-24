@@ -35,6 +35,7 @@ namespace BayesPointMachineForm
         private BPMDataModel _trainingModel, _testModel;
         private bool appendToFile;
         private static BPM bpm;
+        private double epsilon;
         int prevRem;
         int performedInInterval;
         DateTime last = DateTime.Now;
@@ -265,6 +266,7 @@ namespace BayesPointMachineForm
                 //Round i to nearest (_sensitivityIncrement) to allow for floating point error
                 //double roundingVal = 1/_sensitivityIncrement;
                 i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
+                epsilon = i;
                 //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
@@ -301,6 +303,7 @@ namespace BayesPointMachineForm
         private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value = (_totalRuns - e.ProgressPercentage);
+            statusLabel.Text = string.Format("PErforming inference for epsilon = {0}...", epsilon);
             if ((progressBar1.Value) % 10 == 0)
             {
                 performedInInterval = prevRem - _runsLeft;

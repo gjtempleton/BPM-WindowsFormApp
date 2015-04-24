@@ -52,9 +52,12 @@
             this.label6 = new System.Windows.Forms.Label();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // testFileSelect
@@ -68,7 +71,7 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(13, 294);
+            this.textBox1.Location = new System.Drawing.Point(13, 316);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(259, 43);
@@ -76,7 +79,7 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(13, 265);
+            this.progressBar1.Location = new System.Drawing.Point(13, 287);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(259, 23);
             this.progressBar1.TabIndex = 3;
@@ -186,7 +189,7 @@
             // beginButton
             // 
             this.beginButton.Enabled = false;
-            this.beginButton.Location = new System.Drawing.Point(13, 343);
+            this.beginButton.Location = new System.Drawing.Point(13, 365);
             this.beginButton.Name = "beginButton";
             this.beginButton.Size = new System.Drawing.Size(259, 43);
             this.beginButton.TabIndex = 14;
@@ -261,11 +264,27 @@
             this.checkBox3.Text = "Write Gaussian distributions to file as well?";
             this.checkBox3.UseVisualStyleBackColor = true;
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 421);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(284, 22);
+            this.statusStrip1.TabIndex = 21;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statusLabel
+            // 
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(0, 17);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 398);
+            this.ClientSize = new System.Drawing.Size(284, 443);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.checkBox3);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.label6);
@@ -292,6 +311,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -323,6 +344,8 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusLabel;
 
     }
 }
