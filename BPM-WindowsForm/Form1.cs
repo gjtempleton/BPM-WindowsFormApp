@@ -342,6 +342,21 @@ namespace BayesPointMachineForm
             {
                 textBox1.Text = @"Canceled!";
             }
+            else if (!(e.Error == null))
+            {
+                textBox1.Text = ("Error: " + e.Error.Message + "\nPerforming cleanup of results file now.");
+                int noOfLines;
+                if (!_onlyWriteAggregateResults) noOfLines = _writeGaussians ? _noOfRuns : _noOfRuns*2;
+                else noOfLines = _writeGaussians ? 2 : _noOfRuns + 2;
+                double[] cleanupResults = FileUtils.CleanupFile(_resultsFilePath, noOfLines);
+                if (cleanupResults[1] == _noOfRuns) _startSensitivity = (cleanupResults[0] + _sensitivityIncrement);
+                else _startSensitivity = cleanupResults[0];
+                checkBox4.Checked = true;
+                checkBox4.Update();
+                textBox4.Text = _startSensitivity.ToString();
+                textBox4.Update();
+                textBox1.Text = (string.Format("Cleanup done, can try running again now and will append to end of file."));
+            }
             else
             {
                 textBox1.Text = @"Done!";
@@ -397,6 +412,12 @@ namespace BayesPointMachineForm
             checkBox1.Enabled = reEnable;
             checkBox2.Enabled = reEnable;
             checkBox3.Enabled = reEnable;
+            checkBox4.Enabled = reEnable;
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            _appendToFile = checkBox4.Checked;
         }
 
 
