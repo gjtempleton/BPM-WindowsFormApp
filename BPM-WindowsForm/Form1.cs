@@ -313,7 +313,7 @@ namespace BayesPointMachineForm
         private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value = (_totalRuns - e.ProgressPercentage);
-            statusLabel.Text = string.Format("PErforming inference for epsilon = {0}...", _epsilon);
+            statusLabel.Text = string.Format("Performing inference for epsilon = {0}...", _epsilon);
             if ((progressBar1.Value) % 10 == 0)
             {
                 _performedInInterval = _prevRem - _runsLeft;
@@ -324,7 +324,13 @@ namespace BayesPointMachineForm
                 _diff = _now - _last;
                 _last = _now;
                 TimeSpan remainder = new TimeSpan((_diff.Ticks / _performedInInterval) * _runsLeft);
-                String timeEstimate = remainder.ToString();
+                String timeEstimate = String.Format("{0} hour{1} {2} minute{3} {4} second{5}",
+                    remainder.Hours,
+                    remainder.Hours == 1 ? "" : "s",
+                    remainder.Minutes,
+                    remainder.Minutes == 1 ? "" : "s",
+                    remainder.Seconds,
+                    remainder.Seconds == 1 ? "" : "s");
                 textBox1.Text = (_runsLeft + @" runs left of " + _totalRuns + @". Should take roughly " +
                                  timeEstimate);
             }
