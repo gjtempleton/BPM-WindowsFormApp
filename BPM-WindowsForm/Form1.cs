@@ -205,6 +205,11 @@ namespace BayesPointMachineForm
             _writeGaussians = checkBox3.Checked;
         }
 
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            _appendToFile = checkBox4.Checked;
+        }
+
         #endregion
 
         private void begin_Click(object sender, EventArgs e)
@@ -250,7 +255,7 @@ namespace BayesPointMachineForm
         private void bw_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            BPMDataModel noisyModel; // = FileUtils.CreateNoisyModel(_trainingModel, _noisePrecision);
+            BPMDataModel noisyModel;
             Vector[] testVectors = _testModel.GetInputs();
             _runsLeft = _totalRuns;
             double accuracy;
@@ -268,13 +273,12 @@ namespace BayesPointMachineForm
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
                 //Round i to nearest (_sensitivityIncrement) to allow for floating point error
-                //double roundingVal = 1/_sensitivityIncrement;
                 i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
                 _epsilon = i;
                 //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
-                    if ((worker.CancellationPending))
+                    if (worker != null && (worker.CancellationPending))
                     {
                         e.Cancel = true;
                         //Break out of both loops
@@ -289,7 +293,7 @@ namespace BayesPointMachineForm
                     accuracy = RunBPMGeneral(noisyModel, _addBias, testVectors,
                         _testModel.GetClasses());
                     _runsLeft--;
-                    worker.ReportProgress(_runsLeft);
+                    if (worker != null) worker.ReportProgress(_runsLeft);
                     //if (_runsLeft == 9970) ShowDialog("Sorry, there was an error reading the input data", "Error", true);
                     if (!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
                     else vals.Add(accuracy);
@@ -344,7 +348,8 @@ namespace BayesPointMachineForm
             }
             else if (!(e.Error == null))
             {
-                textBox1.Text = ("Error: " + e.Error.Message + "\nPerforming cleanup of results file now.");
+                textBox1.Text = (@"Error: " + e.Error.Message + @"
+Performing cleanup of results file now.");
                 int noOfLines;
                 if (!_onlyWriteAggregateResults) noOfLines = _writeGaussians ? _noOfRuns : _noOfRuns*2;
                 else noOfLines = _writeGaussians ? 2 : _noOfRuns + 2;
@@ -371,7 +376,7 @@ namespace BayesPointMachineForm
             int i = 0;
             foreach (double val in values)
             {
-                if (Math.Abs(val - maxValue) < 0.1)
+                if (val == maxValue)
                     return i;
                 i++;
             }
@@ -414,12 +419,6 @@ namespace BayesPointMachineForm
             checkBox3.Enabled = reEnable;
             checkBox4.Enabled = reEnable;
         }
-
-        private void checkBox4_CheckedChanged(object sender, EventArgs e)
-        {
-            _appendToFile = checkBox4.Checked;
-        }
-
 
     }
 }
