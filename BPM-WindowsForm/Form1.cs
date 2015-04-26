@@ -328,7 +328,9 @@ namespace BayesPointMachineForm
                 _diff = _now - _last;
                 _last = _now;
                 TimeSpan remainder = new TimeSpan((_diff.Ticks / _performedInInterval) * _runsLeft);
-                String timeEstimate = String.Format("{0} hour{1} {2} minute{3} {4} second{5}",
+                String timeEstimate = String.Format("{0} day{1} {2} hour{3} {4} minute{5} {6} second{7}",
+                    remainder.Days,
+                    remainder.Days == 1 ? "" : "s",
                     remainder.Hours,
                     remainder.Hours == 1 ? "" : "s",
                     remainder.Minutes,
