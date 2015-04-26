@@ -285,9 +285,9 @@
             this.checkBox4.AutoSize = true;
             this.checkBox4.Location = new System.Drawing.Point(13, 274);
             this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(80, 17);
+            this.checkBox4.Size = new System.Drawing.Size(206, 17);
             this.checkBox4.TabIndex = 22;
-            this.checkBox4.Text = "checkBox4";
+            this.checkBox4.Text = "Append output to end of file selected?";
             this.checkBox4.UseVisualStyleBackColor = true;
             this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
             // 

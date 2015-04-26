@@ -214,7 +214,7 @@ namespace BayesPointMachineForm
 
         private void begin_Click(object sender, EventArgs e)
         {
-            if (_performingCalcs)
+            if (!_performingCalcs)
             {
                 //Disable input changes
                 ChangeStatusOfInputs(false);
