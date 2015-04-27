@@ -213,6 +213,12 @@ namespace BayesPointMachineForm
 
         private void begin_Click(object sender, EventArgs e)
         {
+            if (_maxSensitivity < _startSensitivity)
+            {
+                ShowDialog(@"The maximum sensitivity must be greater than or equal to the minimum sensitivity.",
+                    "Error", false);
+                return;
+            }
             if (!_performingCalcs)
             {
                 //Disable input changes
@@ -395,12 +401,12 @@ Performing cleanup of results file now.");
         public void ShowDialog(string text, string title, bool fileError)
         {
             Form messageForm = new Form();
-            messageForm.Width = 1300;
-            messageForm.Height = 500;
+            messageForm.Width = 300;
+            messageForm.Height = 200;
             messageForm.Text = title;
             //Create a text label for it to pass the user the message
-            Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Width = 1200, Height = 460 };
-            Button dismissButton = new Button() { Text = @"Ok", Left = 350, Width = 100, Top = 70 };
+            Label textLabel = new Label() { Left = 50, Top = 20, Text = text, Width = 200, Height = 60 };
+            Button dismissButton = new Button() { Text = @"Ok", Left = 100, Width = 100, Top = 80 };
             dismissButton.Click += (sender, e) => { messageForm.Close(); };
             //If caused by an error force the user to reselect the two files
             if (fileError)
@@ -409,6 +415,7 @@ Performing cleanup of results file now.");
                 _testingSelected = false;
             }
             messageForm.Controls.Add(textLabel);
+            messageForm.Controls.Add(dismissButton);
             messageForm.ShowDialog();
         }
 
