@@ -126,11 +126,11 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(133, 42);
+            this.label2.Location = new System.Drawing.Point(127, 42);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(151, 13);
+            this.label2.Size = new System.Drawing.Size(157, 13);
             this.label2.TabIndex = 7;
-            this.label2.Text = "Number of runs for each sigma";
+            this.label2.Text = "Number of runs for each epsilon";
             // 
             // textBox2
             // 
@@ -153,18 +153,18 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(10, 86);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(107, 13);
+            this.label3.Size = new System.Drawing.Size(113, 13);
             this.label3.TabIndex = 10;
-            this.label3.Text = "Minimum sigma value";
+            this.label3.Text = "Minimum epsilon value";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(149, 86);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(110, 13);
+            this.label4.Size = new System.Drawing.Size(116, 13);
             this.label4.TabIndex = 11;
-            this.label4.Text = "Maximum sigma value";
+            this.label4.Text = "Maximum epsilon value";
             // 
             // textBox4
             // 
