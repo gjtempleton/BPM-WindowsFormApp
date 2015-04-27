@@ -73,12 +73,16 @@ namespace BayesPointMachineForm
             numericUpDown3.ValueChanged += (noOfClasses_Changed);
             //Need at least two classes
             numericUpDown3.Minimum = 2;
-            textBox2.TextChanged += (startingSensitivity_Changed);
-            textBox3.TextChanged += (maximumSensitivity_Changed);
-            textBox4.TextChanged += (sensitivityIncrement_Changed);
+            textBox2.KeyPress += numericTextBox_KeyPress;
+            textBox2.Leave += (startingSensitivity_Changed);
+            textBox3.KeyPress += numericTextBox_KeyPress;
+            textBox3.Leave += (maximumSensitivity_Changed);
+            textBox4.KeyPress += numericTextBox_KeyPress;
+            textBox4.Leave += (sensitivityIncrement_Changed);
             checkBox2.Click += (aggregateResults_Changed);
             checkBox3.Click += (writeGaussians_Changed);
         }
+
 
         private static double RunBPMGeneral(BPMDataModel model, bool addBias, Vector[] testSet, int[] testResults)
         {
@@ -150,44 +154,39 @@ namespace BayesPointMachineForm
             _noOfRuns = (int)numericUpDown2.Value;
         }
 
+        void numericTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != (Char)Keys.Back &&  e.KeyChar != (Char)Keys.Delete) 
+            {
+                e.Handled = (!char.IsNumber(e.KeyChar) && !e.KeyChar.ToString().Equals("."));
+            }
+        }
+
         private void startingSensitivity_Changed(object sender, EventArgs e)
         {
-            try
+            if (textBox2.TextLength == 0)
             {
-                _startSensitivity = Double.Parse(textBox2.Text);
-            }
-            catch (FormatException)
-            {
-                ShowDialog("Error in number format", "Error", false);
                 textBox2.Text = _startSensitivity.ToString(CultureInfo.InvariantCulture);
             }
+            else _startSensitivity = Double.Parse(textBox2.Text);
         }
 
         private void maximumSensitivity_Changed(object sender, EventArgs e)
         {
-            try
+            if (textBox3.TextLength == 0)
             {
-                _maxSensitivity = Double.Parse(textBox3.Text);
-            }
-            catch (FormatException)
-            {
-                ShowDialog("Error in number format", "Error", false);
                 textBox3.Text = _maxSensitivity.ToString(CultureInfo.InvariantCulture);
             }
-
+            else _maxSensitivity = Double.Parse(textBox3.Text);
         }
 
         private void sensitivityIncrement_Changed(object sender, EventArgs e)
         {
-            try
+            if (textBox4.TextLength == 0)
             {
-                _sensitivityIncrement = Double.Parse(textBox4.Text);
-            }
-            catch (FormatException)
-            {
-                ShowDialog("Error in number format", "Error", false);
                 textBox4.Text = _sensitivityIncrement.ToString(CultureInfo.InvariantCulture);
             }
+            else _sensitivityIncrement = Double.Parse(textBox2.Text);
         }
 
         private void noOfClasses_Changed(object sender, EventArgs e)
