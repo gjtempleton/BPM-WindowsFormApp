@@ -225,7 +225,7 @@ namespace BayesPointMachineForm
                     _trainingModel = FileUtils.ReadFile(_trainingFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                     _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                     _writer = new StreamWriter(_resultsFilePath, _appendToFile);
-                    _totalRuns = (int) (_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
+                    _totalRuns = (int) Math.Ceiling(_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
                     bw.WorkerReportsProgress = true;
                     bw.WorkerSupportsCancellation = true;
                     bw.DoWork += bw_DoWork;
