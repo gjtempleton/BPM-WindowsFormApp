@@ -262,10 +262,12 @@ namespace BayesPointMachineForm
             List<double> vals = new List<double>(_noOfRuns);
             double accForGroup, stdevForGroup;
             //Always write the result without any noise to begin
+            #region Scaling currently doesn't work
             //BPMDataModel temp = trainingModel;
             //temp.ScaleFeatures();
             //testModel.SetInputLimits(temp.GetInputLimits());
             //testModel.ScaleFeatures();
+            #endregion
             accuracy = RunBPMGeneral(_trainingModel, _addBias, testVectors,
                 _testModel.GetClasses());
             _writer.WriteLine(0.0 + "," + accuracy);
@@ -273,9 +275,9 @@ namespace BayesPointMachineForm
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
                 //Round i to nearest (_sensitivityIncrement) to allow for floating point error
-                i = Math.Round(i, 2, MidpointRounding.AwayFromZero);
+                //Assumes user will not want to increment in steps smaller than 0.001
+                i = Math.Round(i, 3, MidpointRounding.AwayFromZero);
                 _epsilon = i;
-                //i = (Math.Floor((i * roundingVal) + (roundingVal / 2)) * _sensitivityIncrement);
                 for (int j = 0; j < _noOfRuns; j++)
                 {
                     if (worker != null && (worker.CancellationPending))
@@ -286,15 +288,16 @@ namespace BayesPointMachineForm
                         break;
                     }
                     noisyModel = FileUtils.CreateNoisyModel(_trainingModel, i);
+                    #region Scaling features again
                     //Set the test model data to have the same range plus max and min
                     //values as the noisy model, to normalise both data models to the same range
                     //testModel.SetInputLimits(noisyModel.GetInputLimits());
                     //testModel.ScaleFeatures();
+                    #endregion
                     accuracy = RunBPMGeneral(noisyModel, _addBias, testVectors,
                         _testModel.GetClasses());
                     _runsLeft--;
                     if (worker != null) worker.ReportProgress(_runsLeft);
-                    //if (_runsLeft == 9970) ShowDialog("Sorry, there was an error reading the input data", "Error", true);
                     if (!_onlyWriteAggregateResults) _writer.WriteLine(i + "," + accuracy);
                     else vals.Add(accuracy);
                 }

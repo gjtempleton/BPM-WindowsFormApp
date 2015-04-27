@@ -212,7 +212,7 @@ namespace BayesPointMachineForm
             }
             writer.Flush();
             writer.Close();
-            results = new double[2] { final, count };
+            results = new[] { final, count };
             return results;
         }
     }

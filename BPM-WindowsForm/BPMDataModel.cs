@@ -20,10 +20,6 @@ namespace BayesPointMachineForm
             _ranges = new List<double>(noOfInputs);
             _noOfFeatures = noOfFeatures;
         }
-        //public void SetAFeature(double[] featureValues)
-        //{
-        //    inputsDoubles.Add(featureValues);
-        //}
 
         public void SetAllVectorFeatures(Vector[] allFeatures)
         {
