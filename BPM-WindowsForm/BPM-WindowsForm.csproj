@@ -63,11 +63,13 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Infer.Compiler">
-      <HintPath>..\..\..\..\..\Downloads\Infer.NET 2.5\Bin\Infer.Compiler.dll</HintPath>
+    <Reference Include="Infer.Compiler, Version=2.5.30419.0, Culture=neutral, PublicKeyToken=e4813102a62778da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BayesPointMachine\bin\Debug\Infer.Compiler.dll</HintPath>
     </Reference>
-    <Reference Include="Infer.Runtime">
-      <HintPath>..\..\..\..\..\Downloads\Infer.NET 2.5\Bin\Infer.Runtime.dll</HintPath>
+    <Reference Include="Infer.Runtime, Version=2.5.30419.0, Culture=neutral, PublicKeyToken=e4813102a62778da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BayesPointMachine\bin\Debug\Infer.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -16,7 +16,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <StartupObject>
     </StartupObject>
     <PublishUrl>publish\</PublishUrl>
@@ -33,7 +33,8 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +47,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,15 +59,16 @@
     <DocumentationFile>
     </DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Infer.Compiler, Version=2.5.30409.0, Culture=neutral, PublicKeyToken=e4813102a62778da, processorArchitecture=MSIL">
+    <Reference Include="Infer.Compiler, Version=2.6.41114.1, Culture=neutral, PublicKeyToken=e4813102a62778da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\bin\Infer.Compiler.dll</HintPath>
+      <HintPath>bin\Debug\Infer.Compiler.dll</HintPath>
     </Reference>
-    <Reference Include="Infer.Runtime, Version=2.5.30409.0, Culture=neutral, PublicKeyToken=e4813102a62778da, processorArchitecture=MSIL">
+    <Reference Include="Infer.Runtime, Version=2.6.41114.1, Culture=neutral, PublicKeyToken=e4813102a62778da, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\bin\Infer.Runtime.dll</HintPath>
+      <HintPath>bin\Debug\Infer.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
