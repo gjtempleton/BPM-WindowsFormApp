@@ -268,9 +268,14 @@ namespace BayesPointMachineForm
             //testModel.SetInputLimits(temp.GetInputLimits());
             //testModel.ScaleFeatures();
             #endregion
-            accuracy = RunBPMGeneral(_trainingModel, _addBias, testVectors,
-                _testModel.GetClasses());
-            _writer.WriteLine(0.0 + "," + accuracy);
+            //Assume that if appending to file accuracy for epsilon = 0 is already calculated
+            if (!_appendToFile)
+            {
+                accuracy = RunBPMGeneral(_trainingModel, _addBias, testVectors,
+                    _testModel.GetClasses());
+
+                _writer.WriteLine(0.0 + "," + accuracy);
+            }
             //Now loop through noisy models
             for (double i = _startSensitivity; i <= _maxSensitivity; i = (i + _sensitivityIncrement))
             {
