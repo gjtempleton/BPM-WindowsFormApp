@@ -380,6 +380,7 @@ Performing cleanup of results file now.");
             else
             {
                 textBox1.Text = @"Done!";
+                ShowDialog(string.Format("Inference finished, results saved to {0}", _resultsFilePath), "Done!", false);
             }
             ChangeStatusOfInputs(true);
             
