@@ -38,7 +38,7 @@ namespace BayesPointMachineForm
         private BackgroundWorker bw = new BackgroundWorker();
         private int _prevRem;
         private int _performedInInterval;
-        private DateTime _last = DateTime.Now;
+        private DateTime _last;
         private DateTime _now;
         private TimeSpan _diff;
         #endregion
@@ -231,6 +231,7 @@ namespace BayesPointMachineForm
                     _testModel = FileUtils.ReadFile(_testFilePath, _labelAtStartOfLine, _noOfFeatures, _addBias);
                     _writer = new StreamWriter(_resultsFilePath, _appendToFile);
                     _totalRuns = (int) Math.Ceiling(_noOfRuns*(1 + ((_maxSensitivity - _startSensitivity)/_sensitivityIncrement)));
+                    _last = DateTime.Now;
                     bw.WorkerReportsProgress = true;
                     bw.WorkerSupportsCancellation = true;
                     bw.DoWork += bw_DoWork;
@@ -266,7 +267,6 @@ namespace BayesPointMachineForm
             double accuracy;
             List<double> vals = new List<double>(_noOfRuns);
             double accForGroup, stdevForGroup;
-            //Always write the result without any noise to begin
             #region Scaling currently doesn't work
             //BPMDataModel temp = trainingModel;
             //temp.ScaleFeatures();
@@ -380,6 +380,8 @@ Performing cleanup of results file now.");
             else
             {
                 textBox1.Text = @"Done!";
+                beginButton.Text = @"Begin processing";
+                statusLabel.Text = @"";
                 ShowDialog(string.Format("Inference finished, results saved to {0}", _resultsFilePath), "Done!", false);
             }
             ChangeStatusOfInputs(true);
