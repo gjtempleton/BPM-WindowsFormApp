@@ -246,6 +246,8 @@ namespace BayesPointMachineForm
                 catch (Exception exception)
                 {
                     ShowDialog("Sorry, there was an error reading the input data" + exception.GetType(), "Error", true);
+                    beginButton.Text = @"Begin processing";
+                    ChangeStatusOfInputs(true);
                 }
             }
             else
